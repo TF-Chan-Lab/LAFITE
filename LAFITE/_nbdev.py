@@ -44,8 +44,8 @@ modules = ["utils.py",
            "output.py",
            "lafite_wrapper.py"]
 
-doc_url = "https://zjzace.github.io/script/"
+doc_url = "https://zjzace.github.io/LAFITE/"
 
-git_url = "https://github.com/zjzace/script/tree/master/"
+git_url = "https://github.com/TF-Chan-Lab/LAFITE/tree/master/"
 
 def custom_doc_links(name): return None

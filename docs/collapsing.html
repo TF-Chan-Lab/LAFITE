@@ -36,16 +36,338 @@ nb_path: "03_collapsing.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">OrderedDict</span>
-<span class="kn">from</span> <span class="nn">interlap</span> <span class="kn">import</span> <span class="n">InterLap</span>
-<span class="kn">from</span> <span class="nn">LAFITE.reference_processing</span> <span class="kn">import</span> <span class="n">RefAnnotationExtraction</span>
-<span class="kn">from</span> <span class="nn">LAFITE.preprocessing</span> <span class="kn">import</span> <span class="n">split_bed_line</span><span class="p">,</span> <span class="n">read_grouping</span>
-<span class="kn">from</span> <span class="nn">LAFITE.utils</span> <span class="kn">import</span> <span class="n">loc_distance</span><span class="p">,</span> <span class="n">Vividict</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">collections</span> <span class="kn">import</span> <span class="n">defaultdict</span><span class="p">,</span> <span class="n">Counter</span>
+<span class="kn">from</span> <span class="nn">dataclasses</span> <span class="kn">import</span> <span class="n">dataclass</span><span class="p">,</span> <span class="n">field</span>
 <span class="kn">from</span> <span class="nn">time</span> <span class="kn">import</span> <span class="n">strftime</span>
 <span class="kn">from</span> <span class="nn">tqdm</span> <span class="kn">import</span> <span class="n">tqdm</span>
 <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
-<span class="kn">import</span> <span class="nn">pysam</span>
-<span class="kn">from</span> <span class="nn">Bio.Seq</span> <span class="kn">import</span> <span class="n">Seq</span>
+<span class="kn">from</span> <span class="nn">LAFITE.utils</span> <span class="kn">import</span> <span class="n">loc_distance</span><span class="p">,</span> <span class="n">Vividict</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="RawAttributeCollection" class="doc_header"><code>class</code> <code>RawAttributeCollection</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/read_collapsing.py#L19" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>RawAttributeCollection</code>(<strong><code>name</code></strong>:<code>str</code>, <strong><code>start</code></strong>:<code>int</code>, <strong><code>end</code></strong>:<code>int</code>, <strong><code>fsm</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>multi_exon</code></strong>:<code>bool</code>=<em><code>True</code></em>, <strong><code>correct_site</code></strong>:<code>list</code>=<em><code>&lt;factory&gt;</code></em>, <strong><code>merge_gap</code></strong>:<code>list</code>=<em><code>&lt;factory&gt;</code></em>, <strong><code>polyaed</code></strong>:<code>bool</code>=<em><code>False</code></em>, <strong><code>lowCredit_junction</code></strong>:<code>dict</code>=<em><code>&lt;factory&gt;</code></em>, <strong><code>splicing_tag</code></strong>:<code>list</code>=<em><code>&lt;factory&gt;</code></em>, <strong><code>rss_dis</code></strong>:<code>int</code>=<em><code>None</code></em>, <strong><code>res_dis</code></strong>:<code>int</code>=<em><code>None</code></em>, <strong><code>collapsed_ID</code></strong>:<code>str</code>=<em><code>None</code></em>)</p>
+</blockquote>
+<p>RawAttributeCollection(name: str, start: int, end: int, fsm: bool = False, multi_exon: bool = True, correct_site: list = <factory>, merge_gap: list = <factory>, polyaed: bool = False, lowCredit_junction: dict = <factory>, splicing_tag: list = <factory>, rss_dis: int = None, res_dis: int = None, collapsed_ID: str = None)</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="o">@</span> <span class="n">dataclass</span>
+<span class="k">class</span> <span class="nc">RawAttributeCollection</span><span class="p">:</span>
+	<span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+	<span class="n">start</span><span class="p">:</span> <span class="nb">int</span>
+	<span class="n">end</span><span class="p">:</span> <span class="nb">int</span>
+	<span class="n">fsm</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+	<span class="n">multi_exon</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span>
+	<span class="n">correct_site</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+	<span class="n">merge_gap</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+	<span class="n">polyaed</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+	<span class="n">lowCredit_junction</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+	<span class="n">splicing_tag</span><span class="p">:</span> <span class="nb">list</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">default_factory</span><span class="o">=</span><span class="nb">list</span><span class="p">)</span>
+	<span class="n">rss_dis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+	<span class="n">res_dis</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="kc">None</span>
+	<span class="n">collapsed_ID</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="kc">None</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="ReadCorrectionColappse" class="doc_header"><code>class</code> <code>ReadCorrectionColappse</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/read_collapsing.py#L36" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>ReadCorrectionColappse</code>(<strong><code>chrom</code></strong>, <strong><code>strand</code></strong>, <strong><code>chrand_processed_read</code></strong>, <strong><code>chrand_ref_exon</code></strong>, <strong><code>chrand_ref_junction</code></strong>, <strong><code>chrand_ref_single_exon_trans</code></strong>, <strong><code>chrand_ref_mutple_exon_trans</code></strong>, <strong><code>chrand_left_sj_set</code></strong>, <strong><code>chrand_right_sj_set</code></strong>, <strong><code>chrand_junction_dict</code></strong>, <strong><code>sj_correction_window</code></strong>, <strong><code>mis_intron_length</code></strong>, <strong><code>polya_dict</code></strong>, <strong><code>corExcept_dis</code></strong>=<em><code>0</code></em>)</p>
+</blockquote>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">ReadCorrectionColappse</span><span class="p">:</span>
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">chrand_processed_read</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">chrand_ref_junction</span><span class="p">,</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">chrand_junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">mis_intron_length</span><span class="p">,</span> <span class="n">polya_dict</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrom</span> <span class="o">=</span> <span class="n">chrom</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">strand</span> <span class="o">=</span> <span class="n">strand</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_processed_read</span> <span class="o">=</span> <span class="n">chrand_processed_read</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_exon</span> <span class="o">=</span> <span class="n">chrand_ref_exon</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_junction</span> <span class="o">=</span> <span class="n">chrand_ref_junction</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_single_exon_trans</span> <span class="o">=</span> <span class="n">chrand_ref_single_exon_trans</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_mutple_exon_trans</span> <span class="o">=</span> <span class="n">chrand_ref_mutple_exon_trans</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_left_sj_set</span> <span class="o">=</span> <span class="n">chrand_left_sj_set</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_right_sj_set</span> <span class="o">=</span> <span class="n">chrand_right_sj_set</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">chrand_junction_dict</span> <span class="o">=</span> <span class="n">chrand_junction_dict</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span> <span class="o">=</span> <span class="n">sj_correction_window</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mis_intron_length</span> <span class="o">=</span> <span class="n">mis_intron_length</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">polya_dict</span> <span class="o">=</span> <span class="n">polya_dict</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">corExcept_dis</span> <span class="o">=</span> <span class="n">corExcept_dis</span>
+
+	<span class="k">def</span> <span class="nf">single_exon_read_collapse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		remove the single-exon reads overlaped with exon from reference multi-exon transcript and collapse&quot;&quot;&quot;</span>
+		<span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">read</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_exon</span><span class="p">:</span>
+			<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_exon</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">read</span><span class="p">))</span>
+			<span class="k">if</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+				<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+					<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">end</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span><span class="p">:</span>
+						<span class="n">read</span> <span class="o">=</span> <span class="p">[]</span>
+						<span class="k">break</span>
+		<span class="k">if</span> <span class="n">read</span><span class="p">:</span>
+			<span class="n">counter</span><span class="o">=</span><span class="n">Counter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+			<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">counter</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">single_exon_read</span><span class="p">:</span>
+					<span class="n">single_exon_read</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">counter</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">single_exon_read</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+		<span class="k">return</span> <span class="n">single_exon_read</span>
+
+	<span class="k">def</span> <span class="nf">RTS_refrence_distance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">read_splicing</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;calculate the distance between read start/end site to the reference transcript start/end site for FSM reads</span>
+
+<span class="sd">		Args:</span>
+<span class="sd">			strand (str): strand information</span>
+<span class="sd">			start (int): genomic start position regardless of strand</span>
+<span class="sd">			end (int): genomic end position regardless of strand</span>
+<span class="sd">			read_splicing (tuple): corrected read splicing</span>
+<span class="sd">			chrand_ref_mutple_exon_trans (dict): reference multi-exon transcript</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strand</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+			<span class="n">rss_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+			<span class="n">res_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">end</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">rss_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">end</span><span class="p">)</span>
+			<span class="n">res_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+
+		<span class="k">return</span> <span class="n">rss_dis</span><span class="p">,</span> <span class="n">res_dis</span>
+
+	<span class="k">def</span> <span class="nf">multi_exon_read_correction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_id</span><span class="p">,</span> <span class="n">full_block</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">		splicing junction correction and collaspsing for multi-exon read&quot;&quot;&quot;</span>
+
+		<span class="n">raw_splicing</span><span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">full_block</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">raw_read_attribute</span> <span class="o">=</span> <span class="n">RawAttributeCollection</span><span class="p">(</span><span class="n">read_id</span><span class="p">,</span> <span class="n">full_block</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+		<span class="n">corrected_read_splicing</span> <span class="o">=</span> <span class="p">[]</span>
+
+		<span class="c1"># polya event checking</span>
+		<span class="k">try</span><span class="p">:</span>
+			<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">polya_dict</span><span class="p">[</span><span class="n">read_id</span><span class="p">]:</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">polyaed</span> <span class="o">=</span> <span class="kc">True</span>
+		<span class="k">except</span><span class="p">:</span>
+			<span class="k">pass</span>
+		
+		<span class="k">if</span> <span class="n">raw_splicing</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">:</span> <span class="c1"># raw read_splicing matching with the reference</span>
+			<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">fsm</span> <span class="o">=</span> <span class="kc">True</span>
+			<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span> <span class="o">=</span> <span class="s1">&#39;FSM&#39;</span>
+			<span class="n">corrected_read_splicing</span> <span class="o">=</span> <span class="n">raw_splicing</span>
+			<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">rss_dis</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">res_dis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RTS_refrence_distance</span><span class="p">(</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">)</span>
+
+		<span class="k">else</span><span class="p">:</span> <span class="c1"># splicing site correction</span>
+			<span class="n">itered_raw_splicing</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">raw_splicing</span><span class="p">)</span>
+			<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">itered_raw_splicing</span><span class="p">,</span> <span class="n">itered_raw_splicing</span><span class="p">)):</span>
+
+				<span class="c1"># check splicing coverage and motif in raw data</span>
+				<span class="n">sj_pos</span> <span class="o">=</span> <span class="n">full_block</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">left_sj</span><span class="p">)</span>
+				<span class="n">tmp_sj</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strand</span><span class="p">,</span> <span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span>
+				<span class="n">junction_coverage</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_junction_dict</span><span class="p">[</span><span class="n">tmp_sj</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+				<span class="n">junction_motif</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_junction_dict</span><span class="p">[</span><span class="n">tmp_sj</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+
+				<span class="k">if</span> <span class="n">left_sj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_left_sj_set</span> <span class="ow">and</span> <span class="n">right_sj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_right_sj_set</span><span class="p">:</span>
+					<span class="k">if</span> <span class="p">(</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_junction</span><span class="p">:</span>
+						<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">)</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;KC&#39;</span><span class="p">)</span>
+
+				<span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_left_sj_set</span><span class="p">:</span>
+					<span class="n">left_dis</span><span class="p">,</span> <span class="n">left_ref_sj</span> <span class="o">=</span> <span class="n">loc_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">left_sj</span><span class="p">)</span>
+					<span class="n">right_dis</span><span class="p">,</span> <span class="n">right_ref_sj</span> <span class="o">=</span> <span class="n">loc_distance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span>
+
+					<span class="c1"># do not correct the splicing site once the edit distance &gt; sj_correction_window</span>
+					<span class="k">if</span> <span class="n">left_dis</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span><span class="p">:</span> <span class="n">left_ref_sj</span> <span class="o">=</span> <span class="n">left_sj</span>
+					<span class="k">if</span> <span class="n">right_dis</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span><span class="p">:</span> <span class="n">right_ref_sj</span> <span class="o">=</span> <span class="n">right_sj</span>
+
+					<span class="c1"># correction exception, splicing junction with edit distance less than the given value for both sides</span>
+					<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">corExcept_dis</span> <span class="ow">and</span> <span class="n">left_dis</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">corExcept_dis</span> <span class="ow">and</span> <span class="n">right_dis</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">corExcept_dis</span> <span class="ow">and</span> <span class="n">junction_coverage</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">junction_motif</span> <span class="o">==</span> <span class="s1">&#39;canonical&#39;</span><span class="p">:</span>
+						<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;EXC&#39;</span><span class="p">)</span>
+
+					<span class="c1"># splicing site correction</span>
+					<span class="k">elif</span> <span class="n">left_dis</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span> <span class="ow">or</span> <span class="n">right_dis</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span><span class="p">:</span>
+						<span class="k">if</span> <span class="p">[</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="n">left_ref_sj</span><span class="p">,</span> <span class="n">right_ref_sj</span><span class="p">]:</span>
+							<span class="k">pass</span>
+						<span class="k">elif</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">left_ref_sj</span> <span class="o">&lt;</span> <span class="n">right_ref_sj</span> <span class="o">&lt;</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">]:</span>
+							<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">correct_site</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">])</span>
+							<span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span> <span class="o">=</span> <span class="n">left_ref_sj</span><span class="p">,</span> <span class="n">right_ref_sj</span>
+
+						<span class="k">if</span> <span class="n">left_sj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_left_sj_set</span> <span class="ow">and</span> <span class="n">right_sj</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_right_sj_set</span><span class="p">:</span>
+							<span class="k">if</span> <span class="p">(</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_junction</span><span class="p">:</span>
+								<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;CM&#39;</span><span class="p">)</span>
+							<span class="k">else</span><span class="p">:</span>
+								<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;CKC&#39;</span><span class="p">)</span>
+
+				<span class="c1">#checking unintended small intron overlap with reference exons</span>
+				<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="p">)</span> <span class="o">==</span> <span class="n">idx</span> <span class="ow">and</span> <span class="n">right_sj</span> <span class="o">-</span> <span class="n">left_sj</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mis_intron_length</span><span class="p">:</span>
+					<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_exon</span><span class="p">:</span>
+						<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_exon</span><span class="o">.</span><span class="n">find</span><span class="p">((</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)))</span>
+					<span class="k">else</span><span class="p">:</span>
+						<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="p">()</span>
+					<span class="c1"># compare the unintended intron with the ref_exon from multi-exon transcripts</span>
+					<span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+						<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+							<span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">full_block</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">right_sj</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">left_sj</span><span class="p">):</span>
+								<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">merge_gap</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+								<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">multi_exon</span> <span class="o">=</span> <span class="kc">False</span>
+								<span class="k">break</span>
+							<span class="k">elif</span> <span class="p">(</span><span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">left_sj</span><span class="p">):</span>
+								<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">merge_gap</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+								<span class="k">break</span>
+
+					<span class="k">elif</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_splicing</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+						<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+							<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">right_sj</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+								<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">merge_gap</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+								<span class="k">break</span>
+							
+					<span class="k">elif</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_splicing</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+						<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+							<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+								<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">merge_gap</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+								<span class="k">break</span>
+
+					<span class="c1"># compare the unintended intron with the exon from single-exon transcripts</span>
+					<span class="k">elif</span> <span class="ow">not</span> <span class="n">overlapped_ref_exon</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_block</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+						<span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_single_exon_trans</span><span class="p">:</span>
+							<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_single_exon_trans</span><span class="o">.</span><span class="n">find</span><span class="p">((</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)))</span>
+
+						<span class="k">if</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+							<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+								<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">right_sj</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">left_sj</span><span class="p">:</span>
+									<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">merge_gap</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+									<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">multi_exon</span> <span class="o">=</span> <span class="kc">False</span>
+									<span class="k">break</span>
+								
+				<span class="n">corrected_read_splicing</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">])</span>
+
+				<span class="k">if</span> <span class="p">[</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span> <span class="ow">in</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">merge_gap</span><span class="p">:</span>
+					<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;UI&#39;</span><span class="p">)</span>
+					<span class="k">del</span> <span class="n">corrected_read_splicing</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+
+				<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="p">)</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+					<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">splicing_tag</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;NC&#39;</span><span class="p">)</span>
+					<span class="k">if</span> <span class="n">junction_coverage</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+						<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">lowCredit_junction</span><span class="p">[</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">junction_motif</span>
+
+			<span class="n">corrected_read_splicing</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">corrected_read_splicing</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">corrected_read_splicing</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">:</span>
+				<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">fsm</span> <span class="o">=</span> <span class="kc">True</span>
+				<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">rss_dis</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">res_dis</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">RTS_refrence_distance</span><span class="p">(</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">)</span>
+
+		<span class="k">return</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">raw_read_attribute</span>
+
+	<span class="k">def</span> <span class="nf">multi_exon_read_collapse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">collapsed_idx</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;collapsing multi-exon read</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;POS&#39;</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">strand</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span> <span class="k">else</span> <span class="s1">&#39;NEG&#39;</span>
+		<span class="k">if</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">lowCredit_junction</span><span class="p">:</span>
+			<span class="k">pass</span>
+		<span class="k">elif</span> <span class="n">corrected_read_splicing</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">corrected_read_splicing</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">multi_exon_read</span><span class="p">:</span>
+				<span class="n">collapsed_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+				<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">collapsed_ID</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chrom</span><span class="si">}</span><span class="s1">_</span><span class="si">{</span><span class="n">prefix</span><span class="si">}</span><span class="s1">.</span><span class="si">{</span><span class="n">collapsed_idx</span><span class="si">}</span><span class="s1">&#39;</span>
+				<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">start</span><span class="p">],</span> <span class="p">[</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">end</span><span class="p">],</span> <span class="p">[</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">polyaed</span><span class="p">],</span> <span class="mi">1</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">fsm</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">collapsed_ID</span><span class="p">]</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">start</span><span class="p">)</span>
+				<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">end</span><span class="p">)</span>
+				<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">polyaed</span><span class="p">)</span>
+				<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+				<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">collapsed_ID</span> <span class="o">=</span> <span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">5</span><span class="p">]</span>
+
+		<span class="k">if</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">rss_dis</span><span class="p">:</span>
+			<span class="n">rss_dis_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">rss_dis</span><span class="p">)</span>
+			<span class="n">res_dis_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">res_dis</span><span class="p">)</span>
+
+		<span class="k">return</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">collapsed_idx</span><span class="p">,</span> <span class="n">raw_read_attribute</span>
+
+	<span class="k">def</span> <span class="nf">coco_operation</span> <span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">collapsed_idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+		<span class="sd">&quot;&quot;&quot;main function for correcting splicing junction and collpasing reads</span>
+<span class="sd">		&quot;&quot;&quot;</span>
+		<span class="n">corrected_read</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+		<span class="n">correction_log</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+		<span class="n">single_exon_read</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+		<span class="n">multi_exon_read</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+		<span class="n">rss_dis_lst</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">res_dis_lst</span> <span class="o">=</span> <span class="p">[]</span>
+
+		<span class="k">for</span> <span class="n">read_id</span><span class="p">,</span> <span class="n">full_block</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">chrand_processed_read</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">: Collapsing raw reads from </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">chrom</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">strand</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">):</span>
+
+			<span class="c1"># single-exon read collapsing</span>
+			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_block</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> 
+				<span class="n">single_exon_read</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">single_exon_read_collapse</span><span class="p">(</span><span class="n">full_block</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">)</span>
+				<span class="n">corrected_read</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_block</span>
+			<span class="c1"># multi-exon read correction and collapsing</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">raw_read_attribute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_exon_read_correction</span><span class="p">(</span><span class="n">read_id</span><span class="p">,</span> <span class="n">full_block</span><span class="p">)</span>
+				<span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">collapsed_idx</span><span class="p">,</span> <span class="n">raw_read_attribute</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multi_exon_read_collapse</span><span class="p">(</span><span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">collapsed_idx</span><span class="p">)</span>
+
+				<span class="k">if</span> <span class="n">corrected_read_splicing</span><span class="p">:</span>
+					<span class="n">corrected_read</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">corrected_read_splicing</span><span class="p">),</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">end</span><span class="p">]</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">corrected_read</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">start</span><span class="p">,</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">end</span><span class="p">]</span>
+				<span class="n">correction_log</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">raw_read_attribute</span>
+
+		<span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">chrom</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">strand</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">corrected_read</span><span class="p">,</span> <span class="n">correction_log</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span>
 </pre></div>
 
     </div>
@@ -63,10 +385,557 @@ nb_path: "03_collapsing.ipynb"
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="n">gtf</span> <span class="o">=</span> <span class="s1">&#39;/expt/zjzace/Nanopore_subcellular/Reference/gencode.v38.primary_assembly.annotation.sorted.gtf&#39;</span>
-<span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">tss_dict</span> <span class="o">=</span> <span class="n">RefAnnotationExtraction</span><span class="p">(</span><span class="n">gtf</span><span class="p">)</span><span class="o">.</span><span class="n">annotation_sorting</span><span class="p">()</span>
+<span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">tss_dict</span> <span class="o">=</span> <span class="n">RefProcessWrapper</span><span class="p">(</span><span class="n">gtf</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span><span class="o">.</span><span class="n">result_collection</span><span class="p">()</span>
 <span class="n">bed</span> <span class="o">=</span> <span class="s1">&#39;/expt/zjzace/Nanopore_subcellular/Analysis/Assembly/LAFITE/GLRA_tmp/A549_Cyto_LAFITE_tmp/bam.bed&#39;</span>
 <span class="n">fa</span> <span class="o">=</span> <span class="s1">&#39;/NFS/mnemosyne2/expt/zjzace/GenomeRef/GRCh38.primary_assembly.genome.fa&#39;</span>
 <span class="n">junction_dict</span><span class="p">,</span> <span class="n">processed_read</span> <span class="o">=</span> <span class="n">read_grouping</span><span class="p">(</span><span class="n">bed</span><span class="p">,</span> <span class="n">fa</span><span class="p">)</span>
+<span class="n">polya_dict</span> <span class="o">=</span> <span class="n">polya_signal_import</span><span class="p">(</span><span class="s1">&#39;/expt/zjzace/Nanopore_subcellular/Analysis/Nanopolish/A549_Cyto_PolyA.res&#39;</span><span class="p">)</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span> <span class="o">=</span> <span class="s1">&#39;chr19&#39;</span><span class="p">,</span> <span class="s1">&#39;-&#39;</span>
+<span class="n">chrand_processed_read</span> <span class="o">=</span> <span class="n">processed_read</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
+<span class="n">chrand_ref_exon</span> <span class="o">=</span> <span class="n">ref_exon</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
+<span class="n">chrand_ref_junction</span> <span class="o">=</span> <span class="n">ref_junction</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
+<span class="n">chrand_ref_single_exon_trans</span> <span class="o">=</span> <span class="n">ref_single_exon_trans</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
+<span class="n">chrand_ref_mutple_exon_trans</span> <span class="o">=</span> <span class="n">ref_mutple_exon_trans</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
+<span class="n">chrand_left_sj_set</span> <span class="o">=</span> <span class="n">left_sj_set</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
+<span class="n">chrand_right_sj_set</span> <span class="o">=</span> <span class="n">right_sj_set</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
+<span class="n">chrand_junction_dict</span> <span class="o">=</span> <span class="n">junction_dict</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
+<span class="n">sj_correction_window</span> <span class="o">=</span> <span class="mi">40</span>
+<span class="n">mis_intron_length</span> <span class="o">=</span> <span class="mi">150</span>
+<span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">4</span>
+<span class="n">polya_dict</span><span class="o">=</span><span class="n">polya_dict</span>
+<span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">corrected_read</span><span class="p">,</span> <span class="n">correction_log</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span> <span class="o">=</span> <span class="n">ReadCorrectionColappse</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">chrand_processed_read</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">chrand_ref_junction</span><span class="p">,</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">chrand_junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">mis_intron_length</span><span class="p">,</span> <span class="n">polya_dict</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="p">)</span><span class="o">.</span><span class="n">coco_operation</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2022-04-13 12:04:51: Collapsing raw reads from chr19 -: 100%|██████████| 48521/48521 [00:05&lt;00:00, 9070.96it/s] 
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h2 id="CoCoWrapper" class="doc_header"><code>class</code> <code>CoCoWrapper</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/read_collapsing.py#L270" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CoCoWrapper</code>(<strong><code>thread</code></strong>, <strong><code>processed_read</code></strong>, <strong><code>ref_exon</code></strong>, <strong><code>ref_junction</code></strong>, <strong><code>ref_single_exon_trans</code></strong>, <strong><code>ref_mutple_exon_trans</code></strong>, <strong><code>left_sj_set</code></strong>, <strong><code>right_sj_set</code></strong>, <strong><code>junction_dict</code></strong>, <strong><code>sj_correction_window</code></strong>, <strong><code>polya_dict</code></strong>, <strong><code>mis_intron_length</code></strong>, <strong><code>tmp_dir</code></strong>, <strong><code>corExcept_dis</code></strong>=<em><code>0</code></em>)</p>
+</blockquote>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">CoCoWrapper</span><span class="p">:</span>
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread</span><span class="p">,</span> <span class="n">processed_read</span><span class="p">,</span> <span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">polya_dict</span><span class="p">,</span> <span class="n">mis_intron_length</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">,</span><span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">processed_read</span> <span class="o">=</span> <span class="n">processed_read</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">ref_exon</span> <span class="o">=</span> <span class="n">ref_exon</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">ref_junction</span> <span class="o">=</span> <span class="n">ref_junction</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">ref_single_exon_trans</span> <span class="o">=</span> <span class="n">ref_single_exon_trans</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">ref_mutple_exon_trans</span> <span class="o">=</span> <span class="n">ref_mutple_exon_trans</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">left_sj_set</span> <span class="o">=</span> <span class="n">left_sj_set</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">right_sj_set</span> <span class="o">=</span> <span class="n">right_sj_set</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">junction_dict</span> <span class="o">=</span> <span class="n">junction_dict</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span> <span class="o">=</span> <span class="n">sj_correction_window</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">polya_dict</span> <span class="o">=</span> <span class="n">polya_dict</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">mis_intron_length</span> <span class="o">=</span> <span class="n">mis_intron_length</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span> <span class="o">=</span> <span class="n">tmp_dir</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">corExcept_dis</span> <span class="o">=</span> <span class="n">corExcept_dis</span>
+		
+
+	<span class="k">def</span> <span class="nf">job_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+		<span class="n">job</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="k">for</span> <span class="n">branch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_read</span><span class="p">:</span>
+			<span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span> <span class="o">=</span> <span class="n">branch</span>
+			<span class="n">chrand_processed_read</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processed_read</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">chrand_ref_exon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_exon</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">chrand_ref_junction</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_junction</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">chrand_ref_single_exon_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_single_exon_trans</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">chrand_ref_mutple_exon_trans</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ref_mutple_exon_trans</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">chrand_left_sj_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">left_sj_set</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">chrand_right_sj_set</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">right_sj_set</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">chrand_junction_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">junction_dict</span><span class="p">[</span><span class="n">branch</span><span class="p">]</span>
+			<span class="n">job</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ReadCorrectionColappse</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">chrand_processed_read</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">chrand_ref_junction</span><span class="p">,</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">chrand_junction_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mis_intron_length</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">polya_dict</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">corExcept_dis</span><span class="p">))</span>
+		<span class="n">p</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
+		<span class="n">result</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">coco_operation</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">())</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">job</span><span class="p">]</span>
+		<span class="n">p</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+		<span class="n">p</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+
+		<span class="k">return</span> <span class="n">result</span>
+
+	<span class="k">def</span> <span class="nf">result_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+		<span class="n">collected_single_exon_read</span> <span class="o">=</span> <span class="n">Vividict</span><span class="p">()</span>
+		<span class="n">collected_multi_exon_read</span> <span class="o">=</span> <span class="n">Vividict</span><span class="p">()</span>
+		<span class="n">collected_rss</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">collected_res</span> <span class="o">=</span> <span class="p">[]</span>
+		<span class="n">path_to_log</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="si">}</span><span class="s1">/read_correction.log&#39;</span>
+		<span class="n">path_to_corrected_bed</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span><span class="si">}</span><span class="s1">/Corrected_reads.bed&#39;</span>
+
+		<span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">job_compute</span><span class="p">()</span>
+		<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_log</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">flog</span><span class="p">,</span> <span class="nb">open</span><span class="p">(</span><span class="n">path_to_corrected_bed</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fbed</span><span class="p">:</span>
+			<span class="k">for</span> <span class="n">res</span> <span class="ow">in</span> <span class="n">result</span><span class="p">:</span>
+				<span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">corrected_read</span><span class="p">,</span> <span class="n">correction_log</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+				
+				<span class="n">collected_single_exon_read</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span> <span class="o">=</span> <span class="n">single_exon_read</span>
+				<span class="n">collected_multi_exon_read</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span> <span class="o">=</span> <span class="n">multi_exon_read</span>
+				<span class="n">collected_rss</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">rss_dis_lst</span><span class="p">)</span>
+				<span class="n">collected_res</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">res_dis_lst</span><span class="p">)</span>
+				<span class="k">for</span> <span class="n">read_id</span><span class="p">,</span> <span class="n">raw_read_attribute</span> <span class="ow">in</span> <span class="n">correction_log</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+					<span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+					<span class="n">attributes</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="se">\t</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">raw_read_attribute</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+					<span class="n">flog</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">attributes</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+				
+				<span class="k">for</span> <span class="n">read_id</span><span class="p">,</span> <span class="n">full_block</span> <span class="ow">in</span> <span class="n">corrected_read</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+					<span class="n">read_name</span> <span class="o">=</span> <span class="n">read_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+					<span class="n">bed_block</span> <span class="o">=</span> <span class="n">splicing_to_bed_block</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">read_name</span><span class="p">,</span> <span class="n">full_block</span><span class="p">)</span>
+					<span class="n">fbed</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">bed_block</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+		<span class="k">return</span> <span class="n">collected_single_exon_read</span><span class="p">,</span> <span class="n">collected_multi_exon_read</span><span class="p">,</span> <span class="n">collected_rss</span><span class="p">,</span> <span class="n">collected_res</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">LAFITE.reference_processing</span> <span class="kn">import</span> <span class="n">RefProcessWrapper</span><span class="p">,</span> <span class="n">short_reads_sj_import</span>
+<span class="kn">from</span> <span class="nn">LAFITE.preprocessing</span> <span class="kn">import</span> <span class="n">read_grouping</span><span class="p">,</span> <span class="n">polya_signal_import</span><span class="p">,</span> <span class="n">PolyAFinder</span>
+<span class="kn">from</span> <span class="nn">LAFITE.utils</span> <span class="kn">import</span> <span class="n">temp_dir_creation</span><span class="p">,</span> <span class="n">bam2bed</span><span class="p">,</span> <span class="n">keep_tmp_file</span>
+<span class="n">gtf</span> <span class="o">=</span> <span class="s1">&#39;/expt/zjzace/Nanopore_subcellular/SIRV/SIRV_Set1/Raw_data/SIRV_isoforms_multi-fasta-annotation_C_170612a.gtf&#39;</span>
+<span class="n">bed</span> <span class="o">=</span> <span class="s1">&#39;/expt/zjzace/Nanopore_subcellular/SIRV/SIRV_Set1/bam/SRR6058584.sorted.bed&#39;</span>
+<span class="n">fa</span> <span class="o">=</span> <span class="s1">&#39;/expt/zjzace/Nanopore_subcellular/SIRV/SIRV_Set1/Raw_data/SIRV_isoforms_multi-fasta_170612a.fasta&#39;</span>
+<span class="n">junction_dict</span><span class="p">,</span> <span class="n">processed_read</span> <span class="o">=</span> <span class="n">read_grouping</span><span class="p">(</span><span class="n">bed</span><span class="p">,</span> <span class="n">fa</span><span class="p">)</span>
+<span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">tss_dict</span> <span class="o">=</span> <span class="n">RefProcessWrapper</span><span class="p">(</span><span class="n">gtf</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span><span class="o">.</span><span class="n">result_collection</span><span class="p">()</span>
+
+<span class="c1"># polya_dict = polya_signal_import(&#39;/expt/zjzace/Nanopore_subcellular/SIRV/SIRV_Set1/bam/SRR6058584.polya.res&#39;)</span>
+<span class="n">polya_dict</span> <span class="o">=</span> <span class="n">PolyAFinder</span><span class="p">(</span><span class="n">processed_read</span><span class="p">,</span> <span class="n">fa</span><span class="p">,</span> <span class="s1">&#39;/home/zjzace/software/SQANTI3-4.1/data/polyA_motifs/mouse_and_human.polyA_motif.txt&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">polya_estimation</span><span class="p">()</span>
+<span class="n">collected_single_exon_read</span><span class="p">,</span> <span class="n">collected_multi_exon_read</span><span class="p">,</span> <span class="n">tss</span><span class="p">,</span> <span class="n">tes</span> <span class="o">=</span> <span class="n">CoCoWrapper</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">processed_read</span><span class="p">,</span> <span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">polya_dict</span><span class="o">=</span><span class="n">polya_dict</span><span class="p">,</span> <span class="n">mis_intron_length</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span><span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">result_collection</span><span class="p">()</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+<div class="output_subarea output_stream output_stderr output_text">
+<pre>2022-04-12 19:18:26: Collapsing raw reads from SIRV4 +: 100%|██████████| 2661/2661 [00:00&lt;00:00, 91686.87it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV5 -: 100%|██████████| 590/590 [00:00&lt;00:00, 12759.49it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV6 -: 100%|██████████| 1364/1364 [00:00&lt;00:00, 10556.48it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV2 +: 100%|██████████| 4088/4088 [00:00&lt;00:00, 6357.57it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV1 +: 100%|██████████| 3615/3615 [00:01&lt;00:00, 2790.63it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV2 -: 100%|██████████| 6835/6835 [00:01&lt;00:00, 5238.81it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV4 -: 100%|██████████| 7002/7002 [00:01&lt;00:00, 5559.16it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV1 -: 100%|██████████| 7764/7764 [00:01&lt;00:00, 5626.42it/s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV7 -: 100%|██████████| 7413/7413 [00:01&lt;00:00, 6001.32it/s]s]
+2022-04-12 19:18:26: Collapsing raw reads from SIRV3 -: 100%|██████████| 2899/2899 [00:01&lt;00:00, 1956.22it/s]s]
+2022-04-12 19:18:28: Collapsing raw reads from SIRV3 +: 100%|██████████| 10834/10834 [00:00&lt;00:00, 79545.93it/s]
+2022-04-12 19:18:27: Collapsing raw reads from SIRV5 +: 100%|██████████| 20402/20402 [00:00&lt;00:00, 29591.10it/s]
+2022-04-12 19:18:28: Collapsing raw reads from SIRV6 +: 100%|██████████| 32687/32687 [00:01&lt;00:00, 30373.87it/s]
+</pre>
+</div>
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">single_exon_read_collapse</span><span class="p">(</span><span class="n">read</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">overhang</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;remove the single-exon reads overlaped with exon from reference multi-exon transcript and collapse</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		read (list): start and end position of the single-exon read (1 base, [1,100])</span>
+<span class="sd">		chrand_ref_exon (interlap data): exon from reference multi-exon transcript</span>
+<span class="sd">		overhang (int): tolerance distance</span>
+<span class="sd">		single_exon_read (dict): returned collapsed single-exon reads</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	
+	<span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">read</span>
+	<span class="k">if</span> <span class="n">chrand_ref_exon</span><span class="p">:</span>
+		<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chrand_ref_exon</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">read</span><span class="p">))</span>
+		<span class="k">if</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+			<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">start</span><span class="o">+</span><span class="n">overhang</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">end</span><span class="o">-</span><span class="n">overhang</span><span class="p">:</span>
+					<span class="n">read</span> <span class="o">=</span> <span class="p">[]</span>
+					<span class="k">break</span>
+	<span class="k">if</span> <span class="n">read</span><span class="p">:</span>
+		<span class="n">counter</span><span class="o">=</span><span class="n">Counter</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">start</span><span class="p">,</span><span class="n">end</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
+		<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">counter</span><span class="p">:</span>
+			<span class="k">if</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">single_exon_read</span><span class="p">:</span>
+				<span class="n">single_exon_read</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">counter</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">single_exon_read</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">counter</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+	
+	<span class="k">return</span> <span class="n">single_exon_read</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">RTS_refrence_distance</span><span class="p">(</span><span class="n">strand</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">read_splicing</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;calculate the distance between read start/end site to the reference transcript start/end site for FSM reads</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		strand (str): strand information</span>
+<span class="sd">		start (int): genomic start position regardless of strand</span>
+<span class="sd">		end (int): genomic end position regardless of strand</span>
+<span class="sd">		read_splicing (tuple): corrected read splicing</span>
+<span class="sd">		chrand_ref_mutple_exon_trans (dict): reference multi-exon transcript</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="k">if</span> <span class="n">strand</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+		<span class="n">rss_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+		<span class="n">res_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">end</span><span class="p">)</span>
+	<span class="k">else</span><span class="p">:</span>
+		<span class="n">rss_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">end</span><span class="p">)</span>
+		<span class="n">res_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">chrand_ref_mutple_exon_trans</span><span class="p">[</span><span class="n">read_splicing</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="n">start</span><span class="p">)</span>
+	
+	<span class="k">return</span> <span class="n">rss_dis</span><span class="p">,</span> <span class="n">res_dis</span>
+
+	
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">multi_exon_read_correction</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">full_block</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">chrand_ref_junction</span><span class="p">,</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">chrand_junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">mis_intron_length</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="p">,</span> <span class="n">polya_dict</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;splicing junction correction and collaspsing for multi-exon read</span>
+
+<span class="sd">	Args:</span>
+<span class="sd">		chrom (str): chromosome</span>
+<span class="sd">		strand (str): strand information</span>
+<span class="sd">		name (str): read name</span>
+<span class="sd">		full_block (list): start, end position and all splicing site of multi-exon read (1 base, [1,20,40, 100])</span>
+<span class="sd">		chrand_ref_exon (interlap data): exon from reference multi-exon transcript</span>
+<span class="sd">		chrand_ref_junction (list): reference splicing junction</span>
+<span class="sd">		chrand_ref_single_exon_trans (interlap data): reference single-exon transcript</span>
+<span class="sd">		chrand_ref_mutple_exon_trans (dict): reference multi-exon transcript</span>
+<span class="sd">		chrand_left_sj_set (list): reference left splicing site</span>
+<span class="sd">		chrand_right_sj_set (list): reference right splicing site</span>
+<span class="sd">		chrand_junction_dict (dict): splicing junction detected from long read</span>
+<span class="sd">		sj_correction_window (int): tolerance distance for splicing site correction</span>
+<span class="sd">		mis_intron_length (int): unintended small intron gap that should be filled</span>
+<span class="sd">		corExcept_dis (int, optional): edit distance to the reference splicing site</span>
+<span class="sd">		polya_dict (dict, optional): raw long reads Polyadenylation event</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="n">raw_splicing</span><span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">full_block</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+	<span class="n">start</span><span class="p">,</span> <span class="n">end</span> <span class="o">=</span> <span class="n">full_block</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+	<span class="n">corrected_read_splicing</span> <span class="o">=</span> <span class="p">[]</span>
+	<span class="n">tag_dict</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;reference_match&#39;</span><span class="p">:</span><span class="kc">False</span><span class="p">,</span> <span class="s1">&#39;multi-exon&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;correct_site&#39;</span><span class="p">:[],</span> <span class="s1">&#39;merge_site&#39;</span><span class="p">:[],</span> <span class="s1">&#39;polya_signal&#39;</span><span class="p">:</span><span class="kc">False</span> <span class="p">,</span> <span class="s1">&#39;lowCredit_junction&#39;</span><span class="p">:{},</span> <span class="s1">&#39;splicing_tag&#39;</span><span class="p">:[],</span> <span class="s1">&#39;rss_dis&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;res_dis&#39;</span><span class="p">:</span><span class="kc">None</span><span class="p">}</span>
+
+	<span class="c1"># polya event checking</span>
+	<span class="k">try</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">polya_dict</span><span class="p">[</span><span class="n">name</span><span class="p">]:</span> <span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;polya_signal&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+	<span class="k">except</span><span class="p">:</span>
+		<span class="k">pass</span>
+	
+	<span class="k">if</span> <span class="n">raw_splicing</span> <span class="ow">in</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">:</span> <span class="c1"># uncorrected read_splicing matching with the reference</span>
+		<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;reference_match&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+		<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FSM&#39;</span>
+		<span class="n">corrected_read_splicing</span> <span class="o">=</span> <span class="n">raw_splicing</span>
+		<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;rss_dis&#39;</span><span class="p">],</span> <span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;res_dis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RTS_refrence_distance</span><span class="p">(</span><span class="n">strand</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">)</span>
+
+	<span class="k">else</span><span class="p">:</span> <span class="c1"># splicing site correction</span>
+		<span class="n">itered_raw_splicing</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">raw_splicing</span><span class="p">)</span>
+		<span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="p">(</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">itered_raw_splicing</span><span class="p">,</span> <span class="n">itered_raw_splicing</span><span class="p">)):</span>
+
+			<span class="c1"># check splicing coverage and motif in raw data</span>
+			<span class="n">sj_pos</span> <span class="o">=</span> <span class="n">full_block</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">left_sj</span><span class="p">)</span>
+			<span class="n">tmp_sj</span> <span class="o">=</span> <span class="p">(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">,</span><span class="n">left_sj</span><span class="p">,</span><span class="n">right_sj</span><span class="p">)</span>
+			<span class="n">junction_coverage</span> <span class="o">=</span> <span class="n">chrand_junction_dict</span><span class="p">[</span><span class="n">tmp_sj</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+			<span class="n">junction_motif</span> <span class="o">=</span> <span class="n">chrand_junction_dict</span><span class="p">[</span><span class="n">tmp_sj</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span>
+			
+			<span class="k">if</span> <span class="n">left_sj</span> <span class="ow">in</span> <span class="n">chrand_left_sj_set</span> <span class="ow">and</span> <span class="n">right_sj</span> <span class="ow">in</span> <span class="n">chrand_right_sj_set</span><span class="p">:</span>
+				<span class="k">if</span> <span class="p">(</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span> <span class="ow">in</span> <span class="n">chrand_ref_junction</span><span class="p">:</span>
+					<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;M&#39;</span><span class="p">)</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;KC&#39;</span><span class="p">)</span>
+
+			<span class="k">elif</span> <span class="n">chrand_left_sj_set</span><span class="p">:</span>
+				<span class="n">left_dis</span><span class="p">,</span> <span class="n">left_ref_sj</span> <span class="o">=</span> <span class="n">loc_distance</span><span class="p">(</span><span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">left_sj</span><span class="p">)</span>
+				<span class="n">right_dis</span><span class="p">,</span> <span class="n">right_ref_sj</span> <span class="o">=</span> <span class="n">loc_distance</span><span class="p">(</span><span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span>
+
+				<span class="c1"># do not correct the splicing site once the edit distance &gt; sj_correction_window</span>
+				<span class="k">if</span> <span class="n">left_dis</span> <span class="o">&gt;</span> <span class="n">sj_correction_window</span><span class="p">:</span> <span class="n">left_ref_sj</span> <span class="o">=</span> <span class="n">left_sj</span>
+				<span class="k">if</span> <span class="n">right_dis</span> <span class="o">&gt;</span> <span class="n">sj_correction_window</span><span class="p">:</span> <span class="n">right_ref_sj</span> <span class="o">=</span> <span class="n">right_sj</span>
+
+				<span class="c1"># correction exception, splicing junction with edit distance less than 4 for both sides</span>
+				<span class="k">if</span> <span class="n">left_dis</span> <span class="o">&lt;=</span> <span class="n">corExcept_dis</span> <span class="ow">and</span> <span class="n">right_dis</span> <span class="o">&lt;=</span> <span class="n">corExcept_dis</span> <span class="ow">and</span> <span class="n">junction_coverage</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">junction_motif</span> <span class="o">==</span> <span class="s1">&#39;canonical&#39;</span><span class="p">:</span>
+					<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;EXC&#39;</span><span class="p">)</span>
+					
+				<span class="c1"># splicing site correction</span>
+				<span class="k">elif</span> <span class="n">left_dis</span> <span class="o">&lt;=</span> <span class="n">sj_correction_window</span> <span class="ow">or</span> <span class="n">right_dis</span> <span class="o">&lt;=</span> <span class="n">sj_correction_window</span><span class="p">:</span>
+					<span class="k">if</span> <span class="p">[</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">]</span> <span class="o">==</span> <span class="p">[</span><span class="n">left_ref_sj</span><span class="p">,</span> <span class="n">right_ref_sj</span><span class="p">]:</span>
+						<span class="k">pass</span>
+					<span class="k">elif</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">left_ref_sj</span> <span class="o">&lt;</span> <span class="n">right_ref_sj</span> <span class="o">&lt;</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">]:</span>
+						<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;correct_site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">])</span>
+						<span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span> <span class="o">=</span> <span class="n">left_ref_sj</span><span class="p">,</span> <span class="n">right_ref_sj</span>
+
+					<span class="k">if</span> <span class="n">left_sj</span> <span class="ow">in</span> <span class="n">chrand_left_sj_set</span> <span class="ow">and</span> <span class="n">right_sj</span> <span class="ow">in</span> <span class="n">chrand_right_sj_set</span><span class="p">:</span>
+						<span class="k">if</span> <span class="p">(</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)</span> <span class="ow">in</span> <span class="n">chrand_ref_junction</span><span class="p">:</span>
+							<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;CM&#39;</span><span class="p">)</span>
+						<span class="k">else</span><span class="p">:</span>
+							<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;CKC&#39;</span><span class="p">)</span>
+
+			<span class="c1">#checking unintended small intron overlap with reference exons</span>
+			<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="n">idx</span> <span class="ow">and</span> <span class="n">right_sj</span> <span class="o">-</span> <span class="n">left_sj</span> <span class="o">&lt;=</span> <span class="n">mis_intron_length</span><span class="p">:</span>
+				<span class="k">if</span> <span class="n">chrand_ref_exon</span><span class="p">:</span>
+					<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chrand_ref_exon</span><span class="o">.</span><span class="n">find</span><span class="p">((</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)))</span>
+				<span class="k">else</span><span class="p">:</span>
+					<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="p">()</span>
+				<span class="c1"># compare the unintended intron with the ref_exon from multi-exon transcripts</span>
+				<span class="k">if</span> <span class="n">idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+					<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+						<span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">full_block</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">right_sj</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">left_sj</span><span class="p">):</span>
+							<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;merge_site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+							<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;multi-exon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+							<span class="k">break</span>
+						<span class="k">elif</span> <span class="p">(</span><span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">left_sj</span><span class="p">):</span>
+							<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;merge_site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+							<span class="k">break</span>
+							
+				<span class="k">elif</span> <span class="n">idx</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_splicing</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+					<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+						<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">right_sj</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+							<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;merge_site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+							<span class="k">break</span>
+				
+				<span class="k">elif</span> <span class="mi">0</span> <span class="o">&lt;</span> <span class="n">idx</span> <span class="o">&lt;</span> <span class="nb">int</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">raw_splicing</span><span class="p">)</span><span class="o">/</span><span class="mi">2</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span> <span class="ow">and</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+					<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+						<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>  <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
+							<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;merge_site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+							<span class="k">break</span>
+							
+				<span class="c1"># compare the unintended intron with the exon from single-exon transcripts</span>
+				<span class="k">elif</span> <span class="ow">not</span> <span class="n">overlapped_ref_exon</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_block</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+					<span class="k">if</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">:</span>
+						<span class="n">overlapped_ref_exon</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">chrand_ref_single_exon_trans</span><span class="o">.</span><span class="n">find</span><span class="p">((</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">)))</span>
+				
+					<span class="k">if</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+						<span class="k">for</span> <span class="n">exon</span> <span class="ow">in</span> <span class="n">overlapped_ref_exon</span><span class="p">:</span>
+							<span class="k">if</span> <span class="n">exon</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">right_sj</span> <span class="ow">and</span> <span class="n">exon</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">left_sj</span><span class="p">:</span>
+								<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;merge_site&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]])</span>
+								<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;multi-exon&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+								<span class="k">break</span>
+			
+			<span class="n">corrected_read_splicing</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">left_sj</span><span class="p">,</span> <span class="n">right_sj</span><span class="p">])</span>
+
+			<span class="k">if</span> <span class="p">[</span><span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="p">],</span> <span class="n">full_block</span><span class="p">[</span><span class="n">sj_pos</span><span class="o">+</span><span class="mi">1</span><span class="p">]]</span> <span class="ow">in</span> <span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;merge_site&#39;</span><span class="p">]:</span>
+				<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;UI&#39;</span><span class="p">)</span>
+				<span class="k">del</span> <span class="n">corrected_read_splicing</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">:]</span>
+
+			<span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="n">idx</span><span class="p">:</span>
+				<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;splicing_tag&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;NC&#39;</span><span class="p">)</span>
+				<span class="k">if</span> <span class="n">junction_coverage</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+					<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;lowCredit_junction&#39;</span><span class="p">][</span><span class="n">idx</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">junction_motif</span>
+
+		<span class="n">corrected_read_splicing</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">corrected_read_splicing</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">corrected_read_splicing</span> <span class="ow">in</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">:</span>
+			<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;reference_match&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+			<span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;rss_dis&#39;</span><span class="p">],</span> <span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;res_dis&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">RTS_refrence_distance</span><span class="p">(</span><span class="n">strand</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">)</span>
+	
+	<span class="k">return</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">tag_dict</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">multi_exon_read_collapse</span><span class="p">(</span><span class="n">read_id</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">tag_dict</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">collapsed_idx</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;collapsing multi-exon read</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">read_name</span> <span class="o">=</span> <span class="n">read_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+	<span class="k">if</span> <span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;lowCredit_junction&#39;</span><span class="p">]:</span>
+		<span class="k">pass</span>
+	<span class="k">elif</span> <span class="n">corrected_read_splicing</span><span class="p">:</span>
+		<span class="k">if</span> <span class="n">corrected_read_splicing</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">multi_exon_read</span><span class="p">:</span>
+			<span class="n">collapsed_idx</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">]</span> <span class="o">=</span> <span class="p">[[</span><span class="n">start</span><span class="p">],</span> <span class="p">[</span><span class="n">end</span><span class="p">],</span> <span class="p">[</span><span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;polya_signal&#39;</span><span class="p">]],</span> <span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="n">read_name</span><span class="p">],</span> <span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;reference_match&#39;</span><span class="p">],</span> <span class="sa">f</span><span class="s1">&#39;collapsed.</span><span class="si">{</span><span class="n">collapsed_idx</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">start</span><span class="p">)</span>
+			<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">end</span><span class="p">)</span>
+			<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;polya_signal&#39;</span><span class="p">])</span>
+			<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">3</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+			<span class="n">multi_exon_read</span><span class="p">[</span><span class="n">corrected_read_splicing</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="n">read_name</span><span class="p">)</span>
+
+	<span class="k">if</span> <span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;rss_dis&#39;</span><span class="p">]:</span>
+		<span class="n">rss_dis_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;rss_dis&#39;</span><span class="p">])</span>
+		<span class="n">res_dis_lst</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tag_dict</span><span class="p">[</span><span class="s1">&#39;res_dis&#39;</span><span class="p">])</span>
+
+	<span class="k">return</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">collapsed_idx</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">three_prime_exon_extraction</span><span class="p">(</span><span class="n">strand</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">):</span>
+	<span class="n">three_prime_exon</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">set</span><span class="p">)</span>
+	<span class="k">for</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">read_info</span> <span class="ow">in</span> <span class="n">multi_exon_read</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+		<span class="k">if</span> <span class="n">strand</span> <span class="o">==</span> <span class="s1">&#39;+&#39;</span><span class="p">:</span>
+			<span class="n">max_end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">read_info</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+			<span class="n">exon</span> <span class="o">=</span> <span class="p">(</span><span class="n">corrected_read_splicing</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_end</span><span class="p">)</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">max_end</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">read_info</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+			<span class="n">exon</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+		<span class="n">three_prime_exon</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">exon</span><span class="p">)</span>
+	
+	<span class="k">return</span> <span class="n">three_prime_exon</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">coco_operation</span> <span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">chrand_processed_read</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">chrand_ref_junction</span><span class="p">,</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">chrand_junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span> <span class="o">=</span> <span class="mi">40</span><span class="p">,</span> <span class="n">mis_intron_length</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">corExcept_dis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span> <span class="n">polya_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">collapsed_idx</span> <span class="o">=</span> <span class="mi">0</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;main function for correcting splicing junction and collpasing reads</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+	<span class="n">corrected_read</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+	<span class="n">correction_log</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+	<span class="n">single_exon_read</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+	<span class="n">multi_exon_read</span> <span class="o">=</span> <span class="n">defaultdict</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+	<span class="n">rss_dis_lst</span> <span class="o">=</span> <span class="n">res_dis_lst</span> <span class="o">=</span> <span class="p">[]</span>
+
+	<span class="k">for</span> <span class="n">read_id</span><span class="p">,</span> <span class="n">full_block</span> <span class="ow">in</span> <span class="n">tqdm</span><span class="p">(</span><span class="n">chrand_processed_read</span><span class="o">.</span><span class="n">items</span><span class="p">(),</span> <span class="n">desc</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%Y-%m-</span><span class="si">%d</span><span class="s2"> %H:%M:%S&quot;</span><span class="p">)</span><span class="si">}</span><span class="s1">: Collapsing raw reads from </span><span class="si">{</span><span class="n">chrom</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">strand</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">):</span>
+		
+		<span class="c1"># single-exon read collapsing</span>
+		<span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">full_block</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span> 
+			<span class="n">single_exon_read</span> <span class="o">=</span> <span class="n">single_exon_read_collapse</span><span class="p">(</span><span class="n">full_block</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">)</span>
+			<span class="n">corrected_read</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">full_block</span>
+		<span class="c1"># multi-exon read correction and collapsing</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">tag_dict</span> <span class="o">=</span> <span class="n">multi_exon_read_correction</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">read_id</span><span class="p">,</span> <span class="n">full_block</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">chrand_ref_junction</span><span class="p">,</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">chrand_junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">mis_intron_length</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="p">,</span> <span class="n">polya_dict</span><span class="p">)</span>
+			
+			<span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">collapsed_idx</span> <span class="o">=</span> <span class="n">multi_exon_read_collapse</span><span class="p">(</span><span class="n">read_id</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">corrected_read_splicing</span><span class="p">,</span> <span class="n">tag_dict</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">collapsed_idx</span><span class="p">)</span>
+			<span class="k">if</span> <span class="n">corrected_read_splicing</span><span class="p">:</span>
+				<span class="n">corrected_read</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="o">*</span><span class="nb">list</span><span class="p">(</span><span class="n">corrected_read_splicing</span><span class="p">),</span> <span class="n">end</span><span class="p">]</span>
+			<span class="k">else</span><span class="p">:</span>
+				<span class="n">corrected_read</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">start</span><span class="p">,</span> <span class="n">end</span><span class="p">]</span>
+			<span class="n">correction_log</span><span class="p">[</span><span class="n">read_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">tag_dict</span>
+				
+	<span class="k">return</span> <span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">single_exon_read</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">corrected_read</span><span class="p">,</span> <span class="n">correction_log</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span>
 </pre></div>
 
     </div>
@@ -87,224 +956,7 @@ nb_path: "03_collapsing.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="single_exon_read_collapse" class="doc_header"><code>single_exon_read_collapse</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L22" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>single_exon_read_collapse</code>(<strong><code>read</code></strong>, <strong><code>chrand_ref_exon</code></strong>, <strong><code>overhang</code></strong>, <strong><code>single_exon_read</code></strong>)</p>
-</blockquote>
-<p>remove the single-exon reads overlaped with exon from reference multi-exon transcript and collapse</p>
-<p>Args:
-        read (list): start and end position of the single-exon read (1 base, [1,100])
-        chrand_ref_exon (interlap data): exon from reference multi-exon transcript
-        overhang (int): tolerance distance
-        single_exon_read (dict): returned collapsed single-exon reads</p>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="RTS_refrence_distance" class="doc_header"><code>RTS_refrence_distance</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L53" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>RTS_refrence_distance</code>(<strong><code>strand</code></strong>, <strong><code>start</code></strong>, <strong><code>end</code></strong>, <strong><code>read_splicing</code></strong>, <strong><code>chrand_ref_mutple_exon_trans</code></strong>)</p>
-</blockquote>
-<p>calculate the distance between read start/end site to the reference transcript start/end site for FSM reads</p>
-<p>Args:
-        strand (str): strand information
-        start (int): genomic start position regardless of strand
-        end (int): genomic end position regardless of strand
-        read_splicing (tuple): corrected read splicing
-        chrand_ref_mutple_exon_trans (dict): reference multi-exon transcript</p>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="multi_exon_read_correction" class="doc_header"><code>multi_exon_read_correction</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L76" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>multi_exon_read_correction</code>(<strong><code>chrom</code></strong>, <strong><code>strand</code></strong>, <strong><code>name</code></strong>, <strong><code>full_block</code></strong>, <strong><code>chrand_ref_exon</code></strong>, <strong><code>chrand_ref_junction</code></strong>, <strong><code>chrand_ref_single_exon_trans</code></strong>, <strong><code>chrand_ref_mutple_exon_trans</code></strong>, <strong><code>chrand_left_sj_set</code></strong>, <strong><code>chrand_right_sj_set</code></strong>, <strong><code>chrand_junction_dict</code></strong>, <strong><code>sj_correction_window</code></strong>, <strong><code>mis_intron_length</code></strong>, <strong><code>corExcept_dis</code></strong>, <strong><code>polya_dict</code></strong>)</p>
-</blockquote>
-<p>splicing junction correction and collaspsing for multi-exon read</p>
-<p>Args:
-        strand (str): strand information
-        name (str): read name
-        full_block (list): start, end position and all splicing site of multi-exon read (1 base, [1,20,40, 100])
-        chrand_ref_exon (interlap data): exon from reference multi-exon transcript
-        chrand_ref_junction (list): reference splicing junction
-        chrand_ref_single_exon_trans (interlap data): reference single-exon transcript
-        chrand_ref_mutple_exon_trans (dict): reference multi-exon transcript
-        chrand_left_sj_set (list): reference left splicing site
-        chrand_right_sj_set (list): reference right splicing site
-        chrand_junction_dict (dict): splicing junction detected from long read
-        sj_correction_window (int): tolerance distance for splicing site correction
-        mis_intron_length (int): unintended small intron gap that should be filled
-        corExcept_dis (int, optional): edit distance to the reference splicing site
-        polya_dict (dict, optional): raw long reads Polyadenylation event</p>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="multi_exon_read_collapse" class="doc_header"><code>multi_exon_read_collapse</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L220" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>multi_exon_read_collapse</code>(<strong><code>start</code></strong>, <strong><code>end</code></strong>, <strong><code>corrected_read_splicing</code></strong>, <strong><code>tag_dict</code></strong>, <strong><code>rss_dis_lst</code></strong>, <strong><code>res_dis_lst</code></strong>, <strong><code>multi_exon_read</code></strong>)</p>
-</blockquote>
-<p>collapsing multi-exon read</p>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="three_prime_exon_extraction" class="doc_header"><code>three_prime_exon_extraction</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L242" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>three_prime_exon_extraction</code>(<strong><code>strand</code></strong>, <strong><code>multi_exon_read</code></strong>)</p>
-</blockquote>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="coco_operation" class="doc_header"><code>coco_operation</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L258" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>coco_operation</code>(<strong><code>chrom</code></strong>, <strong><code>strand</code></strong>, <strong><code>chrand_processed_read</code></strong>, <strong><code>chrand_ref_exon</code></strong>, <strong><code>chrand_ref_junction</code></strong>, <strong><code>chrand_ref_single_exon_trans</code></strong>, <strong><code>chrand_ref_mutple_exon_trans</code></strong>, <strong><code>chrand_left_sj_set</code></strong>, <strong><code>chrand_right_sj_set</code></strong>, <strong><code>chrand_junction_dict</code></strong>, <strong><code>sj_correction_window</code></strong>=<em><code>40</code></em>, <strong><code>mis_intron_length</code></strong>=<em><code>150</code></em>, <strong><code>corExcept_dis</code></strong>=<em><code>4</code></em>, <strong><code>polya_dict</code></strong>=<em><code>None</code></em>)</p>
-</blockquote>
-<p>main function for correcting splicing junction and collpasing reads</p>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h4 id="splicing_to_bed_block" class="doc_header"><code>splicing_to_bed_block</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L288" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>splicing_to_bed_block</code>(<strong><code>chrom</code></strong>, <strong><code>strand</code></strong>, <strong><code>name</code></strong>, <strong><code>full_block</code></strong>)</p>
+<h4 id="splicing_to_bed_block" class="doc_header"><code>splicing_to_bed_block</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/read_collapsing.py#L341" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>splicing_to_bed_block</code>(<strong><code>chrom</code></strong>, <strong><code>strand</code></strong>, <strong><code>name</code></strong>, <strong><code>full_block</code></strong>)</p>
 </blockquote>
 
 </div>
@@ -351,36 +1003,12 @@ nb_path: "03_collapsing.ipynb"
     {% raw %}
     
 <div class="cell border-box-sizing code_cell rendered">
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-
-<div class="output_markdown rendered_html output_subarea ">
-<h2 id="CoCoWrapper" class="doc_header"><code>class</code> <code>CoCoWrapper</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/read_collapsing.py#L307" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>CoCoWrapper</code>(<strong><code>thread</code></strong>, <strong><code>processed_read</code></strong>, <strong><code>ref_exon</code></strong>, <strong><code>ref_junction</code></strong>, <strong><code>ref_single_exon_trans</code></strong>, <strong><code>ref_mutple_exon_trans</code></strong>, <strong><code>left_sj_set</code></strong>, <strong><code>right_sj_set</code></strong>, <strong><code>junction_dict</code></strong>, <strong><code>sj_correction_window</code></strong>, <strong><code>tmp_dir</code></strong>=<em><code>'.'</code></em>, <strong><code>mis_intron_length</code></strong>=<em><code>150</code></em>, <strong><code>corExcept_dis</code></strong>=<em><code>4</code></em>, <strong><code>polya_dict</code></strong>=<em><code>None</code></em>)</p>
-</blockquote>
-
-</div>
-
-</div>
-
-</div>
-</div>
-
-</div>
-    {% endraw %}
-
-    {% raw %}
-    
-<div class="cell border-box-sizing code_cell rendered">
 <div class="input">
 
 <div class="inner_cell">
     <div class="input_area">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">class</span> <span class="nc">CoCoWrapper</span><span class="p">:</span>
-	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread</span><span class="p">,</span> <span class="n">processed_read</span><span class="p">,</span> <span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">mis_intron_length</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">polya_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+	<span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">thread</span><span class="p">,</span> <span class="n">processed_read</span><span class="p">,</span> <span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">junction_dict</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">,</span> <span class="n">polya_dict</span><span class="p">,</span> <span class="n">mis_intron_length</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">thread</span> <span class="o">=</span> <span class="n">thread</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">processed_read</span> <span class="o">=</span> <span class="n">processed_read</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">ref_exon</span> <span class="o">=</span> <span class="n">ref_exon</span>
@@ -392,9 +1020,10 @@ nb_path: "03_collapsing.ipynb"
 		<span class="bp">self</span><span class="o">.</span><span class="n">junction_dict</span> <span class="o">=</span> <span class="n">junction_dict</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">sj_correction_window</span> <span class="o">=</span> <span class="n">sj_correction_window</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">tmp_dir</span> <span class="o">=</span> <span class="n">tmp_dir</span>
+		<span class="bp">self</span><span class="o">.</span><span class="n">polya_dict</span> <span class="o">=</span> <span class="n">polya_dict</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">mis_intron_length</span> <span class="o">=</span> <span class="n">mis_intron_length</span>
 		<span class="bp">self</span><span class="o">.</span><span class="n">corExcept_dis</span> <span class="o">=</span> <span class="n">corExcept_dis</span>
-		<span class="bp">self</span><span class="o">.</span><span class="n">polya_dict</span> <span class="o">=</span> <span class="n">polya_dict</span>
+		
 
 	<span class="k">def</span> <span class="nf">job_compute</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 		<span class="n">p</span> <span class="o">=</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">thread</span><span class="p">)</span>
@@ -441,7 +1070,7 @@ nb_path: "03_collapsing.ipynb"
 					<span class="n">read_name</span> <span class="o">=</span> <span class="n">read_id</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
 					<span class="n">bed_block</span> <span class="o">=</span> <span class="n">splicing_to_bed_block</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">read_name</span><span class="p">,</span> <span class="n">full_block</span><span class="p">)</span>
 					<span class="n">fbed</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">bed_block</span><span class="si">}</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-		<span class="k">return</span> <span class="n">collected_single_exon_read</span><span class="p">,</span> <span class="n">collected_multi_exon_read</span>
+		<span class="k">return</span> <span class="n">collected_single_exon_read</span><span class="p">,</span> <span class="n">collected_multi_exon_read</span><span class="p">,</span> <span class="n">collected_rss</span><span class="p">,</span> <span class="n">collected_res</span>
 </pre></div>
 
     </div>
@@ -462,28 +1091,28 @@ nb_path: "03_collapsing.ipynb"
 <span class="c1"># # chrand_read_list1[&#39;adcc854a-2c55-432c-9d65-11ca1d8c9eb4&#39;] = [167500,167519, 167584, 167610]</span>
 
 
-<span class="k">for</span> <span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)</span> <span class="ow">in</span> <span class="n">processed_read</span><span class="p">:</span>
-	<span class="n">chrand_read_list</span> <span class="o">=</span> <span class="n">processed_read</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
-	<span class="n">chrand_ref_exon</span> <span class="o">=</span> <span class="n">ref_exon</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
-	<span class="n">chrand_ref_junction</span> <span class="o">=</span> <span class="n">ref_junction</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
-	<span class="n">chrand_ref_single_exon_trans</span> <span class="o">=</span> <span class="n">ref_single_exon_trans</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">)]</span>
-	<span class="n">chrand_ref_mutple_exon_trans</span> <span class="o">=</span> <span class="n">ref_mutple_exon_trans</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
-	<span class="n">chrand_left_sj_set</span> <span class="o">=</span> <span class="n">left_sj_set</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
-	<span class="n">chrand_right_sj_set</span> <span class="o">=</span> <span class="n">right_sj_set</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
-	<span class="n">chrand_junction_dict</span> <span class="o">=</span> <span class="n">junction_dict</span><span class="p">[(</span><span class="n">chrom</span><span class="p">,</span><span class="n">strand</span><span class="p">)]</span>
-	<span class="n">sj_correction_window</span> <span class="o">=</span> <span class="mi">40</span>
-	<span class="n">mis_intron_length</span> <span class="o">=</span> <span class="mi">150</span>
-	<span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">4</span>
-	<span class="n">polya_dict</span><span class="o">=</span><span class="kc">None</span>
-	<span class="n">single_exon_read</span> <span class="o">=</span> <span class="p">{}</span>
-	<span class="n">tmp_dir</span><span class="o">=</span><span class="s1">&#39;./&#39;</span>
-	<span class="c1"># with open (&#39;test.out&#39;, &#39;w&#39;) as fw:</span>
-	<span class="c1"># 	for read, splicing in tqdm(chrand_read_list.items(), desc = f&#39;{strftime(&quot;%Y-%m-%d %H:%M:%S&quot;)}: Collapsing raw reads from {chrom} {strand}&#39;):</span>
-	<span class="c1"># 		if len(splicing) == 2:</span>
-	<span class="c1"># 			single_exon_read_collapse(splicing, chrand_ref_exon, 40, single_exon_ead)</span>
-	<span class="c1"># 		if len(splicing) &gt; 2:</span>
+<span class="c1"># for (chrom, strand) in processed_read:</span>
+<span class="c1"># 	chrand_read_list = processed_read[(chrom, strand)]</span>
+<span class="c1"># 	chrand_ref_exon = ref_exon[(chrom, strand)]</span>
+<span class="c1"># 	chrand_ref_junction = ref_junction[(chrom, strand)]</span>
+<span class="c1"># 	chrand_ref_single_exon_trans = ref_single_exon_trans[(chrom, strand)]</span>
+<span class="c1"># 	chrand_ref_mutple_exon_trans = ref_mutple_exon_trans[(chrom,strand)]</span>
+<span class="c1"># 	chrand_left_sj_set = left_sj_set[(chrom,strand)]</span>
+<span class="c1"># 	chrand_right_sj_set = right_sj_set[(chrom,strand)]</span>
+<span class="c1"># 	chrand_junction_dict = junction_dict[(chrom,strand)]</span>
+<span class="c1"># 	sj_correction_window = 40</span>
+<span class="c1"># 	mis_intron_length = 150</span>
+<span class="c1"># 	corExcept_dis=4</span>
+<span class="c1"># 	polya_dict=None</span>
+<span class="c1"># 	single_exon_read = {}</span>
+<span class="c1"># 	tmp_dir=&#39;./&#39;</span>
+<span class="c1"># 	# with open (&#39;test.out&#39;, &#39;w&#39;) as fw:</span>
+<span class="c1"># 	# 	for read, splicing in tqdm(chrand_read_list.items(), desc = f&#39;{strftime(&quot;%Y-%m-%d %H:%M:%S&quot;)}: Collapsing raw reads from {chrom} {strand}&#39;):</span>
+<span class="c1"># 	# 		if len(splicing) == 2:</span>
+<span class="c1"># 	# 			single_exon_read_collapse(splicing, chrand_ref_exon, 40, single_exon_ead)</span>
+<span class="c1"># 	# 		if len(splicing) &gt; 2:</span>
 
-	<span class="n">single_exon_read</span><span class="p">,</span> <span class="n">multi_exon_read</span><span class="p">,</span> <span class="n">corrected_read</span><span class="p">,</span> <span class="n">correction_log</span><span class="p">,</span> <span class="n">rss_dis_lst</span><span class="p">,</span> <span class="n">res_dis_lst</span> <span class="o">=</span> <span class="n">coco_operation</span><span class="p">(</span><span class="n">chrom</span><span class="p">,</span> <span class="n">strand</span><span class="p">,</span> <span class="n">chrand_read_list</span><span class="p">,</span> <span class="n">chrand_ref_exon</span><span class="p">,</span> <span class="n">chrand_ref_junction</span><span class="p">,</span> <span class="n">chrand_ref_single_exon_trans</span><span class="p">,</span> <span class="n">chrand_ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">chrand_left_sj_set</span><span class="p">,</span> <span class="n">chrand_right_sj_set</span><span class="p">,</span> <span class="n">chrand_junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="p">)</span>
+<span class="c1"># 	single_exon_read, multi_exon_read, corrected_read, correction_log, rss_dis_lst, res_dis_lst = coco_operation(chrom, strand, chrand_read_list, chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_junction_dict, sj_correction_window)</span>
 </pre></div>
 
     </div>
@@ -500,104 +1129,10 @@ nb_path: "03_collapsing.ipynb"
 
 <div class="inner_cell">
     <div class="input_area">
-<div class=" highlight hl-ipython3"><pre><span></span><span class="n">CoCoWrapper</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">processed_read</span><span class="p">,</span> <span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">junction_dict</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">mis_intron_length</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">polya_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">result_collection</span><span class="p">()</span>
+<div class=" highlight hl-ipython3"><pre><span></span><span class="n">collected_single_exon_read</span><span class="p">,</span> <span class="n">collected_multi_exon_read</span> <span class="o">=</span> <span class="n">CoCoWrapper</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="n">processed_read</span><span class="p">,</span> <span class="n">ref_exon</span><span class="p">,</span> <span class="n">ref_junction</span><span class="p">,</span> <span class="n">ref_single_exon_trans</span><span class="p">,</span> <span class="n">ref_mutple_exon_trans</span><span class="p">,</span> <span class="n">left_sj_set</span><span class="p">,</span> <span class="n">right_sj_set</span><span class="p">,</span> <span class="n">junction_dict</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="o">=</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="n">sj_correction_window</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">mis_intron_length</span> <span class="o">=</span> <span class="mi">150</span><span class="p">,</span> <span class="n">corExcept_dis</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">polya_dict</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">result_collection</span><span class="p">()</span>
 </pre></div>
 
     </div>
-</div>
-</div>
-
-<div class="output_wrapper">
-<div class="output">
-
-<div class="output_area">
-
-<div class="output_subarea output_stream output_stderr output_text">
-<pre>2022-03-29 20:28:28: Collapsing raw reads from chr7 -:  60%|██████    | 19101/31821 [00:01&lt;00:01, 9675.18it/s] ]
-2022-03-29 20:28:29: Collapsing raw reads from chr13 -: 100%|██████████| 9980/9980 [00:00&lt;00:00, 17406.49it/s] ]
-2022-03-29 20:28:28: Collapsing raw reads from chr4 -: 100%|██████████| 15566/15566 [00:02&lt;00:00, 6610.97it/s]]]
-2022-03-29 20:28:28: Collapsing raw reads from chr4 +: 100%|██████████| 17622/17622 [00:02&lt;00:00, 6934.78it/s] ]
-2022-03-29 20:28:28: Collapsing raw reads from chr8 +: 100%|██████████| 14235/14235 [00:02&lt;00:00, 6921.56it/s]]]
-2022-03-29 20:28:29: Collapsing raw reads from chr16 -:  35%|███▌      | 13902/39274 [00:01&lt;00:01, 15341.61it/s]
-2022-03-29 20:28:30: Collapsing raw reads from chr18 -: 100%|██████████| 8197/8197 [00:00&lt;00:00, 13697.88it/s]] 
-2022-03-29 20:28:29: Collapsing raw reads from chr14 +: 100%|██████████| 16935/16935 [00:02&lt;00:00, 6250.35it/s]]
-2022-03-29 20:28:28: Collapsing raw reads from chr10 -:  77%|███████▋  | 24260/31491 [00:03&lt;00:01, 3676.74it/s]
-2022-03-29 20:28:27: Collapsing raw reads from chr3 +:  85%|████████▍ | 26444/31190 [00:04&lt;00:03, 1194.26it/s]] ]
-2022-03-29 20:28:32: Collapsing raw reads from chr21 -: 100%|██████████| 4336/4336 [00:00&lt;00:00, 10152.11it/s]]s]
-2022-03-29 20:28:28: Collapsing raw reads from chr8 -: 100%|██████████| 37168/37168 [00:04&lt;00:00, 7602.15it/s]]s]
-2022-03-29 20:28:28: Collapsing raw reads from chr3 -: 100%|██████████| 35625/35625 [00:05&lt;00:00, 6387.17it/s]]
-2022-03-29 20:28:31: Collapsing raw reads from chr20 -: 100%|██████████| 18994/18994 [00:02&lt;00:00, 7536.19it/s]]
-2022-03-29 20:28:29: Collapsing raw reads from chr15 +: 100%|██████████| 28316/28316 [00:04&lt;00:00, 6580.38it/s]] 
-2022-03-29 20:28:29: Collapsing raw reads from chr16 +: 100%|██████████| 27356/27356 [00:04&lt;00:00, 6313.00it/s] 
-2022-03-29 20:28:28: Collapsing raw reads from chr7 -: 100%|██████████| 31821/31821 [00:06&lt;00:00, 5208.22it/s]] 
-2022-03-29 20:28:28: Collapsing raw reads from chr10 -: 100%|██████████| 31491/31491 [00:05&lt;00:00, 5489.94it/s]]
-2022-03-29 20:28:28: Collapsing raw reads from chr6 -: 100%|██████████| 39859/39859 [00:06&lt;00:00, 6269.85it/s] ]
-2022-03-29 20:28:28: Collapsing raw reads from chr5 -: 100%|██████████| 39592/39592 [00:06&lt;00:00, 5821.71it/s]]]
-2022-03-29 20:28:28: Collapsing raw reads from chr10 +: 100%|██████████| 35964/35964 [00:06&lt;00:00, 5501.67it/s]]
-2022-03-29 20:28:28: Collapsing raw reads from chr5 +: 100%|██████████| 32357/32357 [00:07&lt;00:00, 4407.57it/s]
-2022-03-29 20:28:27: Collapsing raw reads from chr3 +: 100%|██████████| 31190/31190 [00:07&lt;00:00, 4055.34it/s]]
-2022-03-29 20:28:28: Collapsing raw reads from chr9 -: 100%|██████████| 48757/48757 [00:07&lt;00:00, 6888.89it/s]] 
-2022-03-29 20:28:32: Collapsing raw reads from chr20 +: 100%|██████████| 24600/24600 [00:03&lt;00:00, 6551.35it/s]]
-2022-03-29 20:28:28: Collapsing raw reads from chr7 +: 100%|██████████| 39571/39571 [00:07&lt;00:00, 5097.64it/s]] 
-2022-03-29 20:28:29: Collapsing raw reads from chr11 -: 100%|██████████| 55116/55116 [00:07&lt;00:00, 7270.81it/s]]
-2022-03-29 20:28:29: Collapsing raw reads from chr11 +: 100%|██████████| 48234/48234 [00:07&lt;00:00, 6386.01it/s]
-2022-03-29 20:28:29: Collapsing raw reads from chr16 -: 100%|██████████| 39274/39274 [00:07&lt;00:00, 5528.83it/s]
-2022-03-29 20:28:37: Collapsing raw reads from chr21 +: 100%|██████████| 4182/4182 [00:00&lt;00:00, 13636.46it/s]s]
-2022-03-29 20:28:31: Collapsing raw reads from chr19 -: 100%|██████████| 48521/48521 [00:07&lt;00:00, 6405.07it/s]
-2022-03-29 20:28:38: Collapsing raw reads from chrY -: 100%|██████████| 45/45 [00:00&lt;00:00, 5248.27it/s]0it/s]]
-2022-03-29 20:28:38: Collapsing raw reads from chrY +: 100%|██████████| 963/963 [00:00&lt;00:00, 15663.44it/s]/s]]]
-2022-03-29 20:28:38: Collapsing raw reads from chr22 +: 100%|██████████| 14291/14291 [00:01&lt;00:00, 14157.52it/s]
-2022-03-29 20:28:39: Collapsing raw reads from chrM -: 100%|██████████| 1246/1246 [00:00&lt;00:00, 11223.22it/s]]]
-2022-03-29 20:28:39: Collapsing raw reads from GL000008.2 -: 100%|██████████| 5/5 [00:00&lt;00:00, 5822.19it/s]/s]
-2022-03-29 20:28:38: Collapsing raw reads from chr22 -:  77%|███████▋  | 10057/13077 [00:01&lt;00:00, 8425.50it/s]
-2022-03-29 20:28:28: Collapsing raw reads from chr9 +:  95%|█████████▌| 25601/26891 [00:10&lt;00:00, 4168.44it/s]]
-2022-03-29 20:28:39: Collapsing raw reads from GL000194.1 -: 100%|██████████| 26/26 [00:00&lt;00:00, 21585.89it/s]]
-2022-03-29 20:28:38: Collapsing raw reads from chr22 -: 100%|██████████| 13077/13077 [00:01&lt;00:00, 9414.60it/s] 
-2022-03-29 20:28:29: Collapsing raw reads from chr12 +:  87%|████████▋ | 59749/69004 [00:10&lt;00:03, 3017.32it/s]
-2022-03-29 20:28:39: Collapsing raw reads from GL000195.1 -: 100%|██████████| 80/80 [00:00&lt;00:00, 28239.72it/s]
-2022-03-29 20:28:39: Collapsing raw reads from GL000195.1 +: 100%|██████████| 9/9 [00:00&lt;00:00, 3253.64it/s]/s]
-2022-03-29 20:28:30: Collapsing raw reads from chr17 -: 100%|██████████| 65483/65483 [00:09&lt;00:00, 6702.67it/s]
-2022-03-29 20:28:40: Collapsing raw reads from GL000205.2 -: 100%|██████████| 34/34 [00:00&lt;00:00, 14802.40it/s]
-2022-03-29 20:28:30: Collapsing raw reads from chr17 +: 100%|██████████| 67288/67288 [00:09&lt;00:00, 6807.28it/s]
-2022-03-29 20:28:40: Collapsing raw reads from GL000205.2 +: 100%|██████████| 3/3 [00:00&lt;00:00, 3314.78it/s]]s]
-2022-03-29 20:28:40: Collapsing raw reads from GL000214.1 -: 100%|██████████| 1/1 [00:00&lt;00:00, 3942.02it/s]/s]
-2022-03-29 20:28:40: Collapsing raw reads from GL000218.1 -: 100%|██████████| 17/17 [00:00&lt;00:00, 10126.85it/s]
-2022-03-29 20:28:38: Collapsing raw reads from chrX +: 100%|██████████| 33225/33225 [00:02&lt;00:00, 13946.44it/s]
-2022-03-29 20:28:27: Collapsing raw reads from chr2 +: 100%|██████████| 68002/68002 [00:13&lt;00:00, 5051.99it/s]]
-2022-03-29 20:28:38: Collapsing raw reads from chrX -: 100%|██████████| 20503/20503 [00:03&lt;00:00, 6569.59it/s]]
-2022-03-29 20:28:29: Collapsing raw reads from chr12 +: 100%|██████████| 69004/69004 [00:12&lt;00:00, 5664.53it/s]
-2022-03-29 20:28:27: Collapsing raw reads from chr1 +: 100%|██████████| 50757/50757 [00:15&lt;00:00, 3338.23it/s]]
-2022-03-29 20:28:29: Collapsing raw reads from chr15 -: 100%|██████████| 44699/44699 [00:14&lt;00:00, 3159.08it/s]
-2022-03-29 20:28:27: Collapsing raw reads from chr1 -: 100%|██████████| 65276/65276 [00:16&lt;00:00, 4000.37it/s]
-2022-03-29 20:28:45: Collapsing raw reads from GL000219.1 -: 100%|██████████| 23/23 [00:00&lt;00:00, 20582.25it/s]]
-2022-03-29 20:28:45: Collapsing raw reads from GL000219.1 +: 100%|██████████| 8/8 [00:00&lt;00:00, 5195.79it/s]/s]
-2022-03-29 20:28:45: Collapsing raw reads from GL000220.1 +: 100%|██████████| 4/4 [00:00&lt;00:00, 4839.12it/s]s]]
-2022-03-29 20:28:45: Collapsing raw reads from GL000221.1 -: 100%|██████████| 6/6 [00:00&lt;00:00, 4609.97it/s]
-2022-03-29 20:28:45: Collapsing raw reads from GL000224.1 +: 100%|██████████| 10/10 [00:00&lt;00:00, 45540.76it/s]
-2022-03-29 20:28:45: Collapsing raw reads from KI270706.1 +: 100%|██████████| 3/3 [00:00&lt;00:00, 1740.13it/s]s]]
-2022-03-29 20:28:45: Collapsing raw reads from KI270706.1 -: 100%|██████████| 4/4 [00:00&lt;00:00, 2377.39it/s]
-2022-03-29 20:28:45: Collapsing raw reads from KI270711.1 -: 100%|██████████| 7/7 [00:00&lt;00:00, 8717.38it/s]/s]
-
-2022-03-29 20:28:45: Collapsing raw reads from KI270712.1 -: 100%|██████████| 1/1 [00:00&lt;00:00, 1666.39it/s]s]
-2022-03-29 20:28:45: Collapsing raw reads from KI270713.1 +: 100%|██████████| 10/10 [00:00&lt;00:00, 3411.39it/s]
-2022-03-29 20:28:45: Collapsing raw reads from KI270721.1 +: 100%|██████████| 9/9 [00:00&lt;00:00, 37486.33it/s]
-2022-03-29 20:28:45: Collapsing raw reads from KI270734.1 +: 100%|██████████| 36/36 [00:00&lt;00:00, 79849.26it/s]]
-2022-03-29 20:28:45: Collapsing raw reads from KI270733.1 +: 100%|██████████| 56/56 [00:00&lt;00:00, 2683.25it/s]
-2022-03-29 20:28:46: Collapsing raw reads from KI270734.1 -: 100%|██████████| 2/2 [00:00&lt;00:00, 7958.83it/s]
-2022-03-29 20:28:46: Collapsing raw reads from KI270738.1 +: 100%|██████████| 1/1 [00:00&lt;00:00, 3199.32it/s]
-2022-03-29 20:28:46: Collapsing raw reads from KI270741.1 +: 100%|██████████| 6/6 [00:00&lt;00:00, 28339.89it/s]]]
-2022-03-29 20:28:46: Collapsing raw reads from KI270743.1 -: 100%|██████████| 1/1 [00:00&lt;00:00, 1937.32it/s]]
-
-2022-03-29 20:28:46: Collapsing raw reads from KI270744.1 -: 100%|██████████| 15/15 [00:00&lt;00:00, 2991.09it/s]]
-2022-03-29 20:28:46: Collapsing raw reads from KI270744.1 +: 100%|██████████| 1/1 [00:00&lt;00:00, 3715.06it/s]s]]
-2022-03-29 20:28:46: Collapsing raw reads from KI270749.1 +: 100%|██████████| 1/1 [00:00&lt;00:00, 8848.74it/s]s]]
-2022-03-29 20:28:38: Collapsing raw reads from chrM +: 100%|██████████| 35360/35360 [00:07&lt;00:00, 4442.99it/s]]]
-2022-03-29 20:28:29: Collapsing raw reads from chr12 -: 100%|██████████| 67817/67817 [00:18&lt;00:00, 3723.46it/s]]
-2022-03-29 20:28:31: Collapsing raw reads from chr19 +: 100%|██████████| 133935/133935 [00:23&lt;00:00, 5590.68it/s] 
-</pre>
-</div>
-</div>
-
 </div>
 </div>
 

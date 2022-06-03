@@ -22,6 +22,15 @@ entries:
       title: read_collapsing
       url: collapsing.html
     - output: web,pdf
+      title: tailFinder
+      url: RTS_identification.html
+    - output: web,pdf
+      title: refine
+      url: refine.html
+    - output: web,pdf
+      title: output
+      url: output.html
+    - output: web,pdf
       title: lafite_wrapper
       url: wrapper.html
     output: web
