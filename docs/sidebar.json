@@ -5,6 +5,9 @@
     "reference_processing": "reference_processing.html",
     "preprocessing": "preprocessing.html",
     "read_collapsing": "collapsing.html",
+    "tailFinder": "RTS_identification.html",
+    "refine": "refine.html",
+    "output": "output.html",
     "lafite_wrapper": "wrapper.html"
   }
 }

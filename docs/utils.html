@@ -47,7 +47,7 @@ nb_path: "00_utils.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="temp_dir_creation" class="doc_header"><code>temp_dir_creation</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/utils.py#L14" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>temp_dir_creation</code>(<strong><code>output_dir</code></strong>)</p>
+<h4 id="temp_dir_creation" class="doc_header"><code>temp_dir_creation</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/utils.py#L12" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>temp_dir_creation</code>(<strong><code>output_dir</code></strong>)</p>
 </blockquote>
 <p>TemporaryDirectory creation under output directory</p>
 
@@ -72,7 +72,9 @@ nb_path: "00_utils.ipynb"
 	<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">	TemporaryDirectory creation under output directory</span>
 <span class="sd">	&quot;&quot;&quot;</span>
-	<span class="k">return</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+	<span class="n">tmp_folder</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">TemporaryDirectory</span><span class="p">(</span><span class="nb">dir</span><span class="o">=</span><span class="n">output_dir</span><span class="p">)</span>
+
+	<span class="k">return</span> <span class="n">tmp_folder</span>
 </pre></div>
 
     </div>
@@ -93,7 +95,57 @@ nb_path: "00_utils.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="bam2bed" class="doc_header"><code>bam2bed</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/utils.py#L22" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>bam2bed</code>(<strong><code>bam</code></strong>, <strong><code>output_dir</code></strong>, <strong><code>bedtools</code></strong>)</p>
+<h4 id="keep_tmp_file" class="doc_header"><code>keep_tmp_file</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/utils.py#L22" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>keep_tmp_file</code>(<strong><code>output</code></strong>, <strong><code>tmp_dir</code></strong>)</p>
+</blockquote>
+<p>save intermediate files</p>
+
+</div>
+
+</div>
+
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+<div class="input">
+
+<div class="inner_cell">
+    <div class="input_area">
+<div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">keep_tmp_file</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">tmp_dir</span><span class="p">):</span>
+	<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">	save intermediate files</span>
+<span class="sd">	&quot;&quot;&quot;</span>
+
+	<span class="n">inter_dir</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">output</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">_tmp&#39;</span>
+	<span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">	mkdir -p </span><span class="si">{</span><span class="n">inter_dir</span><span class="si">}</span><span class="s1"> &amp;&amp; cp </span><span class="si">{</span><span class="n">tmp_dir</span><span class="si">}</span><span class="s1">/* </span><span class="si">{</span><span class="n">inter_dir</span><span class="si">}</span><span class="s1"></span>
+<span class="s1">	&#39;&#39;&#39;</span>
+</pre></div>
+
+    </div>
+</div>
+</div>
+
+</div>
+    {% endraw %}
+
+    {% raw %}
+    
+<div class="cell border-box-sizing code_cell rendered">
+
+<div class="output_wrapper">
+<div class="output">
+
+<div class="output_area">
+
+
+<div class="output_markdown rendered_html output_subarea ">
+<h4 id="bam2bed" class="doc_header"><code>bam2bed</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/utils.py#L34" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>bam2bed</code>(<strong><code>bam</code></strong>, <strong><code>output_dir</code></strong>, <strong><code>bedtools</code></strong>)</p>
 </blockquote>
 <p>return a command line that covert the bam file to a bed12 format file</p>
 
@@ -119,7 +171,7 @@ nb_path: "00_utils.ipynb"
 <span class="sd">	return a command line that covert the bam file to a bed12 format file</span>
 <span class="sd">	&quot;&quot;&quot;</span>
 	<span class="n">out</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_dir</span><span class="p">,</span> <span class="s1">&#39;bam.bed&#39;</span><span class="p">)</span>
-	<span class="n">bam2bed_cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">bedtools</span><span class="si">}</span><span class="s1"> bamtobed -bed12 -cigar -i </span><span class="si">{</span><span class="n">bam</span><span class="si">}</span><span class="s1">|awk &quot;$4&gt;=1&quot; &gt; </span><span class="si">{</span><span class="n">out</span><span class="si">}</span><span class="s1">&#39;</span>
+	<span class="n">bam2bed_cmd</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">bedtools</span><span class="si">}</span><span class="s2"> bamtobed -bed12 -cigar -i </span><span class="si">{</span><span class="n">bam</span><span class="si">}</span><span class="s2">|awk &#39;$5&gt;=1&#39; &gt; </span><span class="si">{</span><span class="n">out</span><span class="si">}</span><span class="s2">&quot;</span>
 	
 	<span class="k">return</span> <span class="n">bam2bed_cmd</span>
 </pre></div>
@@ -142,7 +194,7 @@ nb_path: "00_utils.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="cmd_execution" class="doc_header"><code>cmd_execution</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/utils.py#L34" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>cmd_execution</code>(<strong><code>command</code></strong>)</p>
+<h4 id="cmd_execution" class="doc_header"><code>cmd_execution</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/utils.py#L46" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>cmd_execution</code>(<strong><code>command</code></strong>)</p>
 </blockquote>
 <p>shell command execution</p>
 
@@ -192,7 +244,7 @@ nb_path: "00_utils.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h4 id="loc_distance" class="doc_header"><code>loc_distance</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/utils.py#L47" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>loc_distance</code>(<strong><code>loc_list</code></strong>, <strong><code>loc</code></strong>)</p>
+<h4 id="loc_distance" class="doc_header"><code>loc_distance</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/utils.py#L59" class="source_link" style="float:right">[source]</a></h4><blockquote><p><code>loc_distance</code>(<strong><code>loc_list</code></strong>, <strong><code>loc</code></strong>)</p>
 </blockquote>
 <p>return the minimum relative distance between the splicing site in reference annotation and the query one</p>
 
@@ -218,19 +270,23 @@ nb_path: "00_utils.ipynb"
 <span class="sd">	return the minimum relative distance between the splicing site in reference annotation and the query one</span>
 <span class="sd">	&quot;&quot;&quot;</span>
 	<span class="n">loc_list</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">loc_list</span><span class="p">)</span>
-	<span class="n">pos</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
-	<span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
-		<span class="n">loc_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">loc_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">loc</span><span class="p">)</span>
-		<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-	<span class="k">elif</span> <span class="n">pos</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">loc_list</span><span class="p">):</span>
-		<span class="n">loc_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">loc</span> <span class="o">-</span> <span class="n">loc_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
-		<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-	<span class="k">elif</span> <span class="n">loc</span> <span class="o">-</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">-</span> <span class="n">loc</span><span class="p">:</span>
-		<span class="n">loc_dis</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">-</span> <span class="n">loc</span>
-		<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+	<span class="k">if</span> <span class="n">loc_list</span><span class="p">:</span>
+		<span class="n">pos</span> <span class="o">=</span> <span class="n">bisect_left</span><span class="p">(</span><span class="n">loc_list</span><span class="p">,</span> <span class="n">loc</span><span class="p">)</span>
+		<span class="k">if</span> <span class="n">pos</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+			<span class="n">loc_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">loc_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="n">loc</span><span class="p">)</span>
+			<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+		<span class="k">elif</span> <span class="n">pos</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">loc_list</span><span class="p">):</span>
+			<span class="n">loc_dis</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">loc</span> <span class="o">-</span> <span class="n">loc_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+			<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+		<span class="k">elif</span> <span class="n">loc</span> <span class="o">-</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">-</span> <span class="n">loc</span><span class="p">:</span>
+			<span class="n">loc_dis</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span> <span class="o">-</span> <span class="n">loc</span>
+			<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="p">]</span>
+		<span class="k">else</span><span class="p">:</span>
+			<span class="n">loc_dis</span> <span class="o">=</span> <span class="n">loc</span> <span class="o">-</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+			<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 	<span class="k">else</span><span class="p">:</span>
-		<span class="n">loc_dis</span> <span class="o">=</span> <span class="n">loc</span> <span class="o">-</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-		<span class="n">ref_loc</span> <span class="o">=</span> <span class="n">loc_list</span><span class="p">[</span><span class="n">pos</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+		<span class="n">loc_dis</span> <span class="o">=</span> <span class="n">ref_loc</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">inf</span>
+	
 	<span class="k">return</span> <span class="n">loc_dis</span><span class="p">,</span> <span class="n">ref_loc</span>
 </pre></div>
 
@@ -252,7 +308,7 @@ nb_path: "00_utils.ipynb"
 
 
 <div class="output_markdown rendered_html output_subarea ">
-<h2 id="Vividict" class="doc_header"><code>class</code> <code>Vividict</code><a href="https://github.com/zjzace/LAFITE/tree/master/LAFITE/utils.py#L70" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Vividict</code>() :: <code>dict</code></p>
+<h2 id="Vividict" class="doc_header"><code>class</code> <code>Vividict</code><a href="https://github.com/TF-Chan-Lab/LAFITE/tree/master/LAFITE/utils.py#L86" class="source_link" style="float:right">[source]</a></h2><blockquote><p><code>Vividict</code>() :: <code>dict</code></p>
 </blockquote>
 <p>create nest dictionary</p>
 
@@ -313,7 +369,10 @@ nb_path: "00_utils.ipynb"
 Converted 01_reference_processing.ipynb.
 Converted 02_preprocessing.ipynb.
 Converted 03_collapsing.ipynb.
-Converted index.ipynb.
+Converted 04_RTS_identification.ipynb.
+Converted 05_refine.ipynb.
+Converted 06_output.ipynb.
+Converted 10_wrapper.ipynb.
 </pre>
 </div>
 </div>
