@@ -19,7 +19,7 @@ Prerequisites
 
 Installation
 ------------
-To avoid potential conflict, we recommend running LAFITE in a conda environment.
+To avoid potential conflicts, we recommend running LAFITE in a conda environment.
 ```
 conda create -n LAFITE_env -c bioconda python=3.7 bedtools
 conda activate LAFITE_env
