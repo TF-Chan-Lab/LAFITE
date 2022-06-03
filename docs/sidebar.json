@@ -1,0 +1,10 @@
+{
+  "LAFITE": {
+    "Overview": "/",
+    "utils": "utils.html",
+    "reference_processing": "reference_processing.html",
+    "preprocessing": "preprocessing.html",
+    "read_collapsing": "collapsing.html",
+    "lafite_wrapper": "wrapper.html"
+  }
+}
