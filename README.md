@@ -23,6 +23,11 @@ To avoid potential conflicts, we recommend running LAFITE in a conda environment
 ```
 conda create -n LAFITE_env -c bioconda python=3.7 bedtools
 conda activate LAFITE_env
+
+# stable release
+pip install LAFITE
+
+# or the latest development version 
 pip install git+https://github.com/TF-Chan-Lab/LAFITE
 ```
 
