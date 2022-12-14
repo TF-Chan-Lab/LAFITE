@@ -15,13 +15,13 @@ Prerequisites
 * [Minimap2](https://github.com/lh3/minimap2)
 * [nanopolish](https://github.com/jts/nanopolish)
 * [samtools](http://www.htslib.org)
-* Python 3.8/3.9
+* Python 3.11
 
 Installation
 ------------
 To avoid potential conflicts, we recommend running LAFITE in a conda environment.
 ```
-conda create -n LAFITE_env -c bioconda python=3.8 bedtools
+conda create -n LAFITE_env -c conda-forge python=3.11
 conda activate LAFITE_env
 
 # stable release
