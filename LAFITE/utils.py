@@ -6,13 +6,15 @@ __all__ = ['temp_dir_creation', 'keep_tmp_file', 'bam2bed', 'cmd_execution', 'lo
 # %% ../00_utils.ipynb 2
 import math, tempfile, os, sys, subprocess
 from bisect import bisect_left
+from time import strftime
+
 
 # %% ../00_utils.ipynb 3
 def temp_dir_creation(output_dir):
 	"""
 	TemporaryDirectory creation under output directory
 	"""
-	tmp_folder = tempfile.TemporaryDirectory(dir=output_dir)
+	tmp_folder = tempfile.TemporaryDirectory(prefix='tmp_LAFITE',suffix=strftime("%Y%m%d%H%M"),dir=output_dir)
 
 	return tmp_folder
 
@@ -50,28 +52,28 @@ def cmd_execution(command):
 
 # %% ../00_utils.ipynb 7
 def loc_distance(loc_list, loc):
-	"""
-	return the minimum relative distance between the splicing site in reference annotation and the query one
-	"""
-	loc_list = list(loc_list)
-	if loc_list:
-		pos = bisect_left(loc_list, loc)
-		if pos == 0:
-			loc_dis = abs(loc_list[0]-loc)
-			ref_loc = loc_list[0]
-		elif pos == len(loc_list):
-			loc_dis = abs(loc - loc_list[-1])
-			ref_loc = loc_list[-1]
-		elif loc - loc_list[pos-1] >= loc_list[pos] - loc:
-			loc_dis = loc_list[pos] - loc
-			ref_loc = loc_list[pos]
-		else:
-			loc_dis = loc - loc_list[pos-1]
-			ref_loc = loc_list[pos-1]
-	else:
-		loc_dis = ref_loc = math.inf
-	
-	return loc_dis, ref_loc
+    """
+    return the minimum relative distance between the splicing site in reference annotation and the query one
+    """
+    loc_list = list(loc_list)
+    if loc_list:
+        pos = bisect_left(loc_list, loc)
+        if pos == 0:
+            loc_dis = abs(loc_list[0]-loc)
+            ref_loc = loc_list[0]
+        elif pos == len(loc_list):
+            loc_dis = abs(loc - loc_list[-1])
+            ref_loc = loc_list[-1]
+        elif loc - loc_list[pos-1] >= loc_list[pos] - loc:
+            loc_dis = loc_list[pos] - loc
+            ref_loc = loc_list[pos]
+        else:
+            loc_dis = loc - loc_list[pos-1]
+            ref_loc = loc_list[pos-1]
+    else:
+        loc_dis = ref_loc = math.inf
+
+    return loc_dis, ref_loc
 
 # %% ../00_utils.ipynb 8
 class Vividict(dict):

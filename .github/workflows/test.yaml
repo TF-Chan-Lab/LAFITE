@@ -4,4 +4,9 @@ on:  [workflow_dispatch, pull_request, push]
 jobs:
   test:
     runs-on: ubuntu-latest
-    steps: [uses: fastai/workflows/nbdev-ci@master]
+    steps: 
+      - name: install bedtools
+        run: |
+          wget https://github.com/arq5x/bedtools2/releases/download/v2.31.0/bedtools.static -O /usr/local/bin/bedtools
+          chmod +x /usr/local/bin/bedtools
+      - uses: fastai/workflows/nbdev-ci@master

@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['gtf_line_split', 'gtf2splicing', 'RefAnnotationExtraction', 'RefProcessWrapper', 'short_reads_sj_import',
-           'cage_tss_import']
+           'cage_tss_import', 'annotation_reshape', 'split_bed_line', 'bed_block_to_splicing', 'read_assignment']
 
 # %% ../01_reference_processing.ipynb 2
 from collections import defaultdict
@@ -11,208 +11,351 @@ from joblib import Parallel, delayed
 from .utils import Vividict
 
 # %% ../01_reference_processing.ipynb 3
-def gtf_line_split (entry):
-	"""split gtf line
-	"""
-	lst = entry.rstrip().split('\t')
-	chrom, source, feature, start, end, score, strand, frame, attribute = lst
-	start = int(start)
-	end = int(end)
+def gtf_line_split(entry):
+    """split gtf line
+    """
+    lst = entry.rstrip().split('\t')
+    chrom, source, feature, start, end, score, strand, frame, attribute = lst
+    start = int(start)
+    end = int(end)
 
-	return chrom, source, feature, start, end, score, strand, frame, attribute
+    return chrom, source, feature, start, end, score, strand, frame, attribute
+
+# %% ../01_reference_processing.ipynb 4
+def gtf2splicing(gtf, transcript_ref='transcript_id', keepAttribute=False, no_transcript=False):
+    """
+    preprocess the gtf file to gene and isoform level
+    """
+    isoform_structure_dict = Vividict()
+    with open(gtf) as f:
+        for line in f:
+            if not line.startswith('#'):
+                chrom, source, feature, start, end, score, strand, frame, attributes = gtf_line_split(
+                    line)
+
+                try:
+                    attributes = [a.strip().replace('"', '') for a in attributes.strip(
+                        ';').split('"; ') if len(a) > 0]
+                    attributes = dict([a.split(' ', 1)[0:2]
+                                      for a in attributes])
+
+                except:
+                    raise ValueError("Fatal: please check input GTF format\n")
+
+                if keepAttribute:
+                    if no_transcript:
+                        # this is only for uncompleted gtf file
+                        transcript_id = attributes[transcript_ref]
+                        if transcript_id not in isoform_structure_dict[(chrom, strand)]:
+                            isoform_structure_dict[(chrom, strand)][transcript_id] = [
+                                attributes]
+
+                    elif feature in ('transcript', 'mRNA'):
+                        transcript_id = attributes[transcript_ref]
+                        isoform_structure_dict[(chrom, strand)][transcript_id] = [
+                            attributes]
+
+                if feature == "exon":
+                    transcript_id = attributes[transcript_ref]
+                    if transcript_id in isoform_structure_dict[(chrom, strand)]:
+                        isoform_structure_dict[(chrom, strand)][transcript_id].extend(
+                            [start, end])
+                    else:
+                        isoform_structure_dict[(chrom, strand)][transcript_id] = [
+                            start, end]
+
+    return isoform_structure_dict
 
 # %% ../01_reference_processing.ipynb 5
-def gtf2splicing(gtf, transcript_ref = 'transcript_id', keepAttribute=False):
-	"""preprocess the gtf file to gene and isoform level
-	"""
-	isoform_structure_dict = Vividict()
-	with open (gtf) as f:
-		for line in f:
-			if not line.startswith('#'):
-				chrom, source, feature, start, end, score, strand, frame, attributes = gtf_line_split(line)
-				
-				try:
-					attributes = [a.strip().replace('"','') for a in attributes.strip(';').split('"; ') if len(a)>0]
-					attributes = dict([a.split(' ',1)[0:2] for a in attributes])
+class RefAnnotationExtraction:
+    """
+    extraction the splicing/exon information from the reference annotation
+    """
 
-				except:
-					raise ValueError("Fatal: please check input GTF format\n")
+    def __init__(self, chrom, strand, chrand_ref_trans_structure_dict):
+        self.chrom = chrom
+        self.strand = strand
+        self.chrand_ref_trans_structure_dict = chrand_ref_trans_structure_dict
 
-				if keepAttribute:
-					if feature in ('transcript', 'mRNA'):
-						transcript_id  = attributes[transcript_ref]
-						isoform_structure_dict[(chrom, strand)][transcript_id] = [attributes]
+    def annotation_extraction(self):
 
-				if feature == "exon":
-					transcript_id  = attributes[transcript_ref]
-					if transcript_id in isoform_structure_dict[(chrom, strand)]:
-						isoform_structure_dict[(chrom, strand)][transcript_id].extend([start,end])
-					else:
-						isoform_structure_dict[(chrom, strand)][transcript_id] = [start,end]
+        # reference exon start and end sites, the key will be chromosome, strand
+        chrand_ref_exon = set()
+        chrand_ref_junction = set()  # splicing junction from reference annotation
+        # splicing list for every chromosome, e.g. {'chr1,+':[[1,2,3,4,5],[111,223,44]], 'chr1,-':[[xxx,xxx,xxx],[xxx,xx,xxxx]]}
+        chrand_ref_mutple_exon_trans = defaultdict(dict)
+        # splicing list for every chromosome, but only for single exon transcript
+        chrand_ref_single_exon_trans = set()
+        chrand_left_sj_set = set()
+        chrand_right_sj_set = set()
+        chrand_tss_dict = set()  # transcript start sites set
 
-	return isoform_structure_dict
+        for isoform, full_block in self.chrand_ref_trans_structure_dict.items():
+            full_block.sort()
+            iso_splicing = full_block[1:-1]
+            start, end = full_block[0], full_block[-1]
+
+            # record the TSS
+            chrand_tss_dict.add(
+                start) if self.strand == '+' else chrand_tss_dict.add(end)
+
+            if not iso_splicing:
+                # record single exon trans start and end site
+                chrand_ref_single_exon_trans.add((start, end, isoform))
+            else:
+                # record the splicing site, splicing junction, exon for multi exon trans
+                full_block = iter(full_block)
+                for idx, exon in enumerate(zip(full_block, full_block)):
+                    chrand_ref_exon.add(exon)
+                    if idx > 0:
+                        right_sj = exon[0]
+                        chrand_left_sj_set.add(left_sj)
+                        chrand_right_sj_set.add(right_sj)
+                        chrand_ref_junction.add((left_sj, right_sj))
+                    left_sj = exon[1]
+
+                # record the splicing structure and the tss and tes for multi exon trans
+                if self.strand == '-':
+                    se_site = [end, start, isoform]
+                else:
+                    se_site = [start, end, isoform]
+                chrand_ref_mutple_exon_trans[tuple(iso_splicing)] = se_site
+
+        return chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict
+
+    def annotation_sorting(self):
+
+        chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict = self.annotation_extraction()
+
+        chrand_tss_dict = sorted(chrand_tss_dict)
+        # sort multi exon transcript by splicing junction number
+        chrand_ref_mutple_exon_trans = dict(sorted(
+            chrand_ref_mutple_exon_trans.items(), key=lambda d: len(d[0]), reverse=True))
+
+        chrand_left_sj_set = sorted(chrand_left_sj_set)
+        chrand_right_sj_set = sorted(chrand_right_sj_set)
+
+        # covert to interlap data format
+        if chrand_ref_single_exon_trans:
+            t = list(chrand_ref_single_exon_trans)
+            chrand_ref_single_exon_trans = InterLap()
+            chrand_ref_single_exon_trans.update(t)
+
+        if chrand_ref_exon:
+            t = list(chrand_ref_exon)
+            chrand_ref_exon = InterLap()
+            chrand_ref_exon.update(t)
+
+        return self.chrom, self.strand, chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict
+
+# %% ../01_reference_processing.ipynb 6
+class RefProcessWrapper:
+    def __init__(self, ref_gtf, thread):
+        self.ref_gtf = ref_gtf
+        self.thread = thread
+
+    def process(self):
+        preprocess_lst = []
+        ref_trans_structure_dict = gtf2splicing(self.ref_gtf)
+        for (chrom, strand), chrand_ref_trans_structure_dict in ref_trans_structure_dict.items():
+            preprocess_lst.append(RefAnnotationExtraction(
+                chrom, strand, chrand_ref_trans_structure_dict))
+        with Parallel(n_jobs=self.thread) as parallel:
+            results = parallel(delayed(lambda x: x.annotation_sorting())(
+                job) for job in preprocess_lst)
+
+        return results
+
+    def result_collection(self):
+        results = self.process()
+        # reference exon start and end sites, the key will be chromosome, strand
+        ref_exon = defaultdict(dict)
+        # splicing junction from reference annotation
+        ref_junction = defaultdict(dict)
+        # splicing list for every chromosome, e.g. {'chr1,+':[[1,2,3,4,5],[111,223,44]], 'chr1,-':[[xxx,xxx,xxx],[xxx,xx,xxxx]]}
+        ref_mutple_exon_trans = Vividict()
+        # splicing list for every chromosome, but only for single exon transcript
+        ref_single_exon_trans = defaultdict(dict)
+        left_sj_set = defaultdict(dict)
+        right_sj_set = defaultdict(dict)
+        tss_dict = defaultdict(dict)  # transcript start sites set
+
+        for result in results:
+            chrom, strand, chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict = result
+
+            tss_dict[(chrom, strand)] = chrand_tss_dict
+            if chrand_ref_exon:
+                ref_exon[(chrom, strand)] = chrand_ref_exon
+            if chrand_ref_junction:
+                ref_junction[(chrom, strand)] = chrand_ref_junction
+            if chrand_ref_mutple_exon_trans:
+                ref_mutple_exon_trans[(chrom, strand)
+                                      ] = chrand_ref_mutple_exon_trans
+            if chrand_ref_single_exon_trans:
+                ref_single_exon_trans[(chrom, strand)
+                                      ] = chrand_ref_single_exon_trans
+            if chrand_left_sj_set:
+                left_sj_set[(chrom, strand)] = chrand_left_sj_set
+            if chrand_right_sj_set:
+                right_sj_set[(chrom, strand)] = chrand_right_sj_set
+
+        return ref_exon, ref_junction, ref_single_exon_trans, ref_mutple_exon_trans, left_sj_set, right_sj_set, tss_dict
 
 # %% ../01_reference_processing.ipynb 7
-class RefAnnotationExtraction:
-	"""
-	extraction the splicing/exon information from the reference annotation
-	"""
+def short_reads_sj_import(sj_tab, left_sj_set, right_sj_set):
+    """import the splicing junctions detected from short reads data (STAR SJ_tab)
+    """
+    for file in sj_tab:
+        with open(file) as f:
+            for line in f:
+                line = line.strip('\n').split("\t")
+                chrom = line[0]
+                if line[3] in ['+', '1']:
+                    strand = '+'
+                else:
+                    strand = '-'
+                left_sj = int(line[1])-1
+                right_sj = int(line[2])+1
+                left_sj_set[(chrom, strand)].add(left_sj)
+                right_sj_set[(chrom, strand)].add(right_sj)
 
-	def __init__(self, chrom, strand, chrand_ref_trans_structure_dict):
-		self.chrom = chrom
-		self.strand = strand
-		self.chrand_ref_trans_structure_dict = chrand_ref_trans_structure_dict
+    for i in left_sj_set:
+        left_sj_set[i] = sorted(left_sj_set[i])
+    for i in right_sj_set:
+        right_sj_set[i] = sorted(right_sj_set[i])
 
-	def annotation_extraction(self):
-
-		chrand_ref_exon = set() # reference exon start and end sites, the key will be chromosome, strand
-		chrand_ref_junction = set() # splicing junction from reference annotation
-		chrand_ref_mutple_exon_trans = defaultdict(dict) # splicing list for every chromosome, e.g. {'chr1,+':[[1,2,3,4,5],[111,223,44]], 'chr1,-':[[xxx,xxx,xxx],[xxx,xx,xxxx]]}
-		chrand_ref_single_exon_trans = set() # splicing list for every chromosome, but only for single exon transcript
-		chrand_left_sj_set = set()
-		chrand_right_sj_set = set()
-		chrand_tss_dict = set() #  transcript start sites set
-
-		for isoform, full_block in self.chrand_ref_trans_structure_dict.items():
-			full_block.sort()
-			iso_splicing = full_block[1:-1]
-			start, end = full_block[0], full_block[-1]
-
-			# record the TSS
-			chrand_tss_dict.add(start) if self.strand == '+' else chrand_tss_dict.add(end)
-
-			if not iso_splicing:
-				# record single exon trans start and end site
-				chrand_ref_single_exon_trans.add((start,end))
-			else:
-				# record the splicing site, splicing junction, exon for multi exon trans
-				full_block = iter(full_block)
-				for idx, exon in enumerate(zip(full_block,full_block)):
-					chrand_ref_exon.add(exon)
-					if idx > 0:
-						right_sj = exon[0]
-						chrand_left_sj_set.add(left_sj)
-						chrand_right_sj_set.add(right_sj)
-						chrand_ref_junction.add((left_sj,right_sj))
-					left_sj = exon[1]
-
-				# record the splicing structure and the tss and tes for multi exon trans
-				if self.strand == '-':
-					se_site = [end, start]
-				else:
-					se_site = [start, end]
-				chrand_ref_mutple_exon_trans[tuple(iso_splicing)] = se_site
-
-		return chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict
-
-	def annotation_sorting(self):
-
-		chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict = self.annotation_extraction()
-
-		chrand_tss_dict = sorted(chrand_tss_dict)
-		# sort multi exon transcript by splicing junction number
-		chrand_ref_mutple_exon_trans = dict(sorted(chrand_ref_mutple_exon_trans.items(), key=lambda d: len(d[0]), reverse=True))
-
-		chrand_left_sj_set = sorted(chrand_left_sj_set)
-		chrand_right_sj_set = sorted(chrand_right_sj_set)
-
-		# covert to interlap data format
-		if chrand_ref_single_exon_trans:
-			t = list(chrand_ref_single_exon_trans)
-			chrand_ref_single_exon_trans = InterLap()
-			chrand_ref_single_exon_trans.update(t)
-
-		if chrand_ref_exon:
-			t = list(chrand_ref_exon)
-			chrand_ref_exon = InterLap()
-			chrand_ref_exon.update(t)
-
-		return self.chrom, self.strand, chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict
+    return left_sj_set, right_sj_set
 
 # %% ../01_reference_processing.ipynb 8
-class RefProcessWrapper:
-	def __init__(self, ref_gtf, thread):
-		self.ref_gtf = ref_gtf
-		self.thread = thread
-	
-	def process(self):
-		preprocess_lst = []
-		ref_trans_structure_dict = gtf2splicing(self.ref_gtf)
-		for (chrom, strand), chrand_ref_trans_structure_dict in ref_trans_structure_dict.items():
-			preprocess_lst.append(RefAnnotationExtraction(chrom, strand, chrand_ref_trans_structure_dict))
-		with Parallel(n_jobs = self.thread) as parallel:
-			results = parallel(delayed(lambda x:x.annotation_sorting())(job) for job in preprocess_lst)
+def cage_tss_import(cage_tss, tss_dict):
+    """import the splicing junctions detected from short reads data (STAR SJ_tab)
+    """
+    for file in cage_tss:
+        with open(file) as f:
+            for line in f:
+                line = line.strip('\n').split("\t")
+                chrom, strand = line[0], line[3]
+                tss_center = round(abs(int(line[2])-int(line[1]))/2 + 1)
+                if tss_center not in tss_dict[(chrom, strand)]:
+                    tss_dict[(chrom, strand)].add(tss_center)
 
-		return results
-	
-	def result_collection(self):
-		results = self.process()
-		ref_exon = defaultdict(dict) # reference exon start and end sites, the key will be chromosome, strand
-		ref_junction = defaultdict(dict) # splicing junction from reference annotation
-		ref_mutple_exon_trans = Vividict() # splicing list for every chromosome, e.g. {'chr1,+':[[1,2,3,4,5],[111,223,44]], 'chr1,-':[[xxx,xxx,xxx],[xxx,xx,xxxx]]}
-		ref_single_exon_trans = defaultdict(dict) # splicing list for every chromosome, but only for single exon transcript
-		left_sj_set = defaultdict(dict)
-		right_sj_set = defaultdict(dict)
-		tss_dict = defaultdict(dict) #  transcript start sites set
+    for i in tss_dict:
+        tss_dict[i] = sorted(tss_dict[i])
 
-		for result in results:
-			chrom, strand, chrand_ref_exon, chrand_ref_junction, chrand_ref_single_exon_trans, chrand_ref_mutple_exon_trans, chrand_left_sj_set, chrand_right_sj_set, chrand_tss_dict = result
-			
-			tss_dict[(chrom,strand)] = chrand_tss_dict
-			if chrand_ref_exon:
-				ref_exon[(chrom,strand)] = chrand_ref_exon
-			if chrand_ref_junction:
-				ref_junction[(chrom,strand)] = chrand_ref_junction
-			if chrand_ref_mutple_exon_trans:
-				ref_mutple_exon_trans[(chrom,strand)] = chrand_ref_mutple_exon_trans
-			if chrand_ref_single_exon_trans:
-				ref_single_exon_trans[(chrom,strand)] = chrand_ref_single_exon_trans
-			if chrand_left_sj_set:
-				left_sj_set[(chrom,strand)] = chrand_left_sj_set
-			if chrand_right_sj_set:
-				right_sj_set[(chrom,strand)] = chrand_right_sj_set
-
-		return ref_exon, ref_junction, ref_single_exon_trans, ref_mutple_exon_trans, left_sj_set, right_sj_set, tss_dict
+    return tss_dict
 
 # %% ../01_reference_processing.ipynb 9
-def short_reads_sj_import(sj_tab, left_sj_set, right_sj_set):
-	"""import the splicing junctions detected from short reads data (STAR SJ_tab)
-	"""
-	for file in sj_tab:
-		with open (file) as f:
-			for line in f:
-				line = line.strip('\n').split("\t")
-				chrom = line[0]
-				if line[3] in ['+', '1']:
-					strand = '+'
-				else:
-					strand = '-'
-				left_sj = int(line[1])-1
-				right_sj = int(line[2])+1
-				left_sj_set[(chrom, strand)].add(left_sj)
-				right_sj_set[(chrom, strand)].add(right_sj)
+def annotation_reshape(isoform_structure_dict):
+    reshaped_multi_exon_isoform_dict = Vividict()
+    reshaped_single_exon_isoform_dict = Vividict()
+    single_exon_isoform_interlap = defaultdict(set)
 
-	for i in left_sj_set:
-		left_sj_set[i] = sorted(left_sj_set[i])
-	for i in right_sj_set:
-		right_sj_set[i] = sorted(right_sj_set[i])
-	
-	return left_sj_set, right_sj_set
+    for chr_str, transcript in isoform_structure_dict.items():
+        chrom, strand = chr_str
+        for transcript_id, isoform_detail in transcript.items():
+            attributes, *isoform_structure = isoform_detail
+            isoform_structure.sort()
+            splicing = isoform_structure[1:-1]
+            if splicing:
+                reshaped_multi_exon_isoform_dict[(chrom, strand)][tuple(splicing)] = [
+                    transcript_id, isoform_structure[0], isoform_structure[1], attributes]
+            else:
+                single_exon_isoform_interlap[(chrom, strand)].add(
+                    tuple(isoform_structure))
+                reshaped_single_exon_isoform_dict[(chrom, strand)][tuple(isoform_structure)] = [
+                    transcript_id, isoform_structure[0], isoform_structure[1], attributes]
+
+    # convert to interlap
+    for i in single_exon_isoform_interlap:
+        t = list(single_exon_isoform_interlap[i])
+        single_exon_isoform_interlap[i] = InterLap()
+        single_exon_isoform_interlap[i].update(t)
+    return reshaped_multi_exon_isoform_dict, reshaped_single_exon_isoform_dict, single_exon_isoform_interlap
 
 # %% ../01_reference_processing.ipynb 10
-def cage_tss_import(cage_tss, tss_dict):
-	"""import the splicing junctions detected from short reads data (STAR SJ_tab)
-	"""
-	for file in cage_tss:
-		with open (file) as f:
-			for line in f:
-				line = line.strip('\n').split("\t")
-				chrom, strand = line[0], line[3]
-				tss_center = round(abs(int(line[2])-int(line[1]))/2 + 1)
-				if tss_center not in tss_dict[(chrom, strand)]:
-					tss_dict[(chrom, strand)].add(tss_center)
+def split_bed_line(bed_line, extends=False):
+    """
+    split bed line
+    """
+    cells = bed_line.strip('\n').split("\t")
+    chrom = start = end = name = score = strand = thick_start = thick_end = item_rgb = block_count = block_sizes = block_starts = others = None
+    if len(cells) >= 3:
+        chrom = cells[0]
+        start = int(cells[1])
+        end = int(cells[2])
+    if len(cells) >= 6:
+        name = cells[3]
+        score = cells[4]
+        strand = cells[5]
+    if len(cells) >= 12:
+        thick_start = int(cells[6])
+        thick_end = int(cells[7])
+        item_rgb = cells[8]
+        block_count = int(cells[9])
+        block_sizes = [int(i) for i in cells[10].rstrip(',').split(',')]
+        block_starts = [int(i) for i in cells[11].rstrip(',').split(',')]
+        if extends:
+            others = cells[12:]
+            return chrom, start, end, name, score, strand, thick_start, thick_end, item_rgb, block_count, block_sizes, block_starts, others
+    return chrom, start, end, name, score, strand, thick_start, thick_end, item_rgb, block_count, block_sizes, block_starts
 
-	for i in tss_dict:
-		tss_dict[i] = sorted(tss_dict[i])
+# %% ../01_reference_processing.ipynb 11
+def bed_block_to_splicing(start, block_count, block_starts, block_sizes):
+    read_splicing = []
+    if block_count > 1:
+        for i in range(block_count-1):
+            left_sj = start + block_starts[i] + block_sizes[i]
+            right_sj = start + block_starts[i+1] + 1
+            read_splicing.extend([left_sj, right_sj])
+    return read_splicing
 
-	return tss_dict
+# %% ../01_reference_processing.ipynb 12
+def read_assignment(bed, reshaped_multi_exon_isoform_dict, reshaped_single_exon_isoform_dict, single_exon_isoform_interlap, only_known=True, ratio=0.8):
+    cp_read_dict = defaultdict(list)
+    with open(bed) as f:
+        for line in f:
+            chrom, start, end, name, score, strand, thick_start, thick_end, item_rgb, block_count, block_sizes, block_starts = split_bed_line(
+                line)
+            if block_count > 1:
+                read_splicing = tuple(bed_block_to_splicing(
+                    start, block_count, block_starts, block_sizes))
+                if read_splicing in reshaped_multi_exon_isoform_dict[(chrom, strand)]:
+                    attributes = reshaped_multi_exon_isoform_dict[(
+                        chrom, strand)][read_splicing][3]
+                    if attributes['isoform_class'] == 'Reference':
+                        if 'reference_id' in attributes:
+                            transcript = attributes['reference_id']
+                            cp_read_dict[transcript].append(name)
+                        # else:
+                        # 	transcript = reshaped_multi_exon_isoform_dict[(chrom, strand)][read_splicing][0]
+                        # 	print(f'ERROR {transcript}')
+
+                    elif not only_known:
+                        transcript = reshaped_multi_exon_isoform_dict[(
+                            chrom, strand)][read_splicing][0]
+                        cp_read_dict[transcript].append(name)
+
+            elif single_exon_isoform_interlap[(chrom, strand)]:
+                overlap_gene = list(single_exon_isoform_interlap[(
+                    chrom, strand)].find((start+1, end)))
+                if overlap_gene:
+                    for i in overlap_gene:
+
+                        attributes = reshaped_single_exon_isoform_dict[(
+                            chrom, strand)][(i[0], i[1])][3]
+                        # transcript = reshaped_single_exon_isoform_dict[(chrom, strand)][(i[0],i[1])][0]
+                        inter = list(
+                            set(range(start, end+1)).intersection(range(i[0], i[1]+1)))
+                        inter.sort()
+                        if (inter[-1]-inter[0]+1)/(i[1]-i[0]+1) > ratio:
+                            if attributes['isoform_class'] == 'Reference':
+                                if 'reference_id' in attributes:
+                                    transcript = attributes['reference_id']
+                                    cp_read_dict[transcript].append(name)
+                            elif not only_known:
+
+                                transcript = reshaped_single_exon_isoform_dict[(
+                                    chrom, strand)][(i[0], i[1])][0]
+                                cp_read_dict[transcript].append(name)
+
+    return cp_read_dict
