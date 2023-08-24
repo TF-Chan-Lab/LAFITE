@@ -144,4 +144,5 @@ checklink/cookies.txt
 collapse.bed
 Corrected_reads.bed
 second.txt
-test.out
+test.out_docs/
+_proc/
