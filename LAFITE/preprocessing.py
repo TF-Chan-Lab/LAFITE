@@ -6,6 +6,7 @@ __all__ = ['split_bed_line', 'bed_block_to_splicing', 'read_grouping', 'polya_si
 # %% ../02_preprocessing.ipynb 2
 import pysam
 from Bio.Seq import Seq
+import gzip
 from .utils import Vividict
 
 # %% ../02_preprocessing.ipynb 3
@@ -90,7 +91,13 @@ def polya_signal_import(polyadenylation_event):
     """
     polya_reads = {}
     if polyadenylation_event:
-        with open(polyadenylation_event) as f:
+        if polyadenylation_event.endswith('.gz'):
+            OPEN = gzip.open
+            mode = 'rb'
+        else:
+            OPEN = open
+            mode = 'r'
+        with OPEN(polyadenylation_event,mode=mode) as f:
             next(f)
             for line in f:
                 line = line.rstrip().split("\t")
